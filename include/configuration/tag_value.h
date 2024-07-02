@@ -44,6 +44,8 @@ class Tag_value : public Element {
      std::string get(const std::string &str) const;
      std::vector<std::string> export_values() const; 
 
+     // XXX [jm] Weights
+     std::string w_green() const;
 };
 
 

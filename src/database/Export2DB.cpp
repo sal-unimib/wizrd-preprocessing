@@ -434,6 +434,8 @@ void Export2DB::exportWays(const Ways &ways, const Configuration &config) const 
                 common_values.push_back(way.oneWay());
                 // common_values.push_back(way.has_attribute("oneway") ? way.get_attribute("oneway") : std::string(""));
                 common_values.push_back(TO_STR(config.priority(way.tag_config())));
+                // XXX [jm] Weights -- Must follow the same order as ways_config.cpp:106
+                common_values.push_back(config.tag_value(way.tag_config()).w_green());
 
                 auto splits = way.split_me();
                 split_count +=  splits.size();

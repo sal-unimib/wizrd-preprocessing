@@ -75,6 +75,9 @@ Tables::ways_config() const {
                 ", maxspeed_forward double precision"
                 ", maxspeed_backward double precision"
                 ", priority double precision DEFAULT 1"
+                // XXX [jm] Add weights to schema
+                ", w_green double precision DEFAULT 1"
+
 #if 0
                 + (m_vm.count("attributes") ?
                         (std::string(", attributes ") + (m_vm.count("hstore") ? "hstore" : "json"))
@@ -100,6 +103,8 @@ Tables::ways_config() const {
     columns.push_back("one_way");
     columns.push_back("oneway");
     columns.push_back("priority");
+    // XXX [jm] Weights -- MAINTAIN THIS ORDER in Export2DB.cpp:437!!
+    columns.push_back("w_green");
 
     columns.push_back("length");
     columns.push_back("x1"); columns.push_back("y1");
@@ -110,6 +115,7 @@ Tables::ways_config() const {
     columns.push_back("cost");
     columns.push_back("reverse_cost");
     columns.push_back("name");
+
 
 
 #if 0

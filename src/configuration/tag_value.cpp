@@ -59,7 +59,18 @@ Tag_value::name() const {
     return get_attribute("name");
 }
 
+// XXX [jm] Custom tags go here
 
+std::string 
+Tag_value::w_green() const {
+    std::stringstream ss;
+    if (has_attribute("w_green")) {
+        ss << get_attribute("w_green");
+    } else {
+        ss << "1.0";
+    }
+    return ss.str();
+}
 
 
 }  // end namespace osm2pgr
