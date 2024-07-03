@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-MAP_FILE=map-ciao.osm
+MAP_FILE=bicocca-manual.osm
 CONFIG_FILE=mapconfig.xml
 
 PGSQL_SERVER_ADDR=172.18.0.2
@@ -10,13 +10,16 @@ PGSQL_USER=admin
 PGSQL_PASS=admin
 
 panic() {
-  RETURN=$1
+  RET=$1
 
-  if [ $RETURN -ne 0 ]; then
+  if [ $RET -ne 0 ]; then
     echo FATAL: $2
-    exit $RETURN
+    exit $RET
   fi
 }
+
+hash psql 2>/dev/null 
+panic $? "PostgreSQL is required to run this script"
 
 export PGPASSWORD=$PGSQL_PASS
 
@@ -35,6 +38,7 @@ echo "*** Phase 2 - Importing data from OSM dump file... ***"
     -h $PGSQL_SERVER_ADDR \
     --tags \
     --attributes
+panic $? "osm2pgrouting: failed to populate DB"
 
 echo "Renaming columns..."
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c 'ALTER TABLE ways RENAME COLUMN gid TO id;'
@@ -55,4 +59,3 @@ for FUNC in functions/*.sql; do
 done
 
 echo Imported $COUNT functions.
-
