@@ -415,6 +415,11 @@ void Export2DB::exportWays(const Ways &ways, const Configuration &config) const 
             PGresult *res = PQexec(mycon, create_sql.c_str());
             res = PQexec(mycon, copy_sql.c_str());
             if (res) {};
+            // XXX [jm] Attributes -- Must follow the same order as ways_config.cpp:120
+            std::list<std::string> keep_tags {
+                "highway",
+                "surface"
+            };
 
 
             for (auto i = start; i < limit; ++i) {
@@ -434,7 +439,7 @@ void Export2DB::exportWays(const Ways &ways, const Configuration &config) const 
                 common_values.push_back(way.oneWay());
                 // common_values.push_back(way.has_attribute("oneway") ? way.get_attribute("oneway") : std::string(""));
                 common_values.push_back(TO_STR(config.priority(way.tag_config())));
-                // XXX [jm] Weights -- Must follow the same order as ways_config.cpp:106
+                // XXX [jm] Weights -- Must follow the same order as ways_config.cpp:109
                 common_values.push_back(config.tag_value(way.tag_config()).w_green());
 
                 auto splits = way.split_me();
@@ -465,6 +470,13 @@ void Export2DB::exportWays(const Ways &ways, const Configuration &config) const 
                         values.push_back(length);
 
                     values.push_back(way.name());
+                    // XXX [jm] Attributes
+                    for(auto tag : keep_tags) {
+                        if(way.has_tag(tag))
+                            values.push_back(way.get_tag(tag));
+                        else
+                            values.push_back("");
+                    }
                     PQputline(mycon, tab_separated(values).c_str());
                 }
             }

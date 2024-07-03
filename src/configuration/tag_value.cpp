@@ -59,7 +59,8 @@ Tag_value::name() const {
     return get_attribute("name");
 }
 
-// XXX [jm] Custom tags go here
+
+// XXX [jm] Custom attributes from mapconfig.xml
 
 std::string 
 Tag_value::w_green() const {
@@ -67,10 +68,9 @@ Tag_value::w_green() const {
     if (has_attribute("w_green")) {
         ss << get_attribute("w_green");
     } else {
-        ss << "1.0";
+        ss << "1.0"; // assume bad
     }
     return ss.str();
 }
-
 
 }  // end namespace osm2pgr

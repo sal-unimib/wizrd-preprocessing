@@ -75,8 +75,10 @@ Tables::ways_config() const {
                 ", maxspeed_forward double precision"
                 ", maxspeed_backward double precision"
                 ", priority double precision DEFAULT 1"
-                // XXX [jm] Add weights to schema
+                // XXX [jm] Custom fields
                 ", w_green double precision DEFAULT 1"
+                ", highway text"
+                ", surface text"
 
 #if 0
                 + (m_vm.count("attributes") ?
@@ -103,7 +105,7 @@ Tables::ways_config() const {
     columns.push_back("one_way");
     columns.push_back("oneway");
     columns.push_back("priority");
-    // XXX [jm] Weights -- MAINTAIN THIS ORDER in Export2DB.cpp:437!!
+    // XXX [jm] Weights -- MAINTAIN THIS ORDER in Export2DB.cpp:437
     columns.push_back("w_green");
 
     columns.push_back("length");
@@ -115,6 +117,9 @@ Tables::ways_config() const {
     columns.push_back("cost");
     columns.push_back("reverse_cost");
     columns.push_back("name");
+    // XXX [jm] Attributes -- MAINTAIN THIS ORDER in Export2DB.cpp:418
+    columns.push_back("highway");
+    columns.push_back("surface");
 
 
 
