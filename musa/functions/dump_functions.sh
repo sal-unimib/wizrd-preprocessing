@@ -3,8 +3,8 @@
 FUNCTION_NAMES=('calculate_cost_advanced' \
                 'calculate_cost_advanced_v2' \
                 'calculate_time_cost' \
-                'calculate_time_cost_v2')
-
+                'calculate_time_cost_v2' \
+                'calculate_heuristic_estimate')
 
 PGSQL_SERVER_ADDR=172.18.0.2
 PGSQL_DB_NAME=klaus-db
