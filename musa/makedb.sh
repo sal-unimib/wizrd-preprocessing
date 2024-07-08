@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-MAP_FILE=bicocca-manual.osm
+MAP_FILE=bicocca-2024-07-08.osm
 CONFIG_FILE=mapconfig.xml
 
 PGSQL_SERVER_ADDR=172.18.0.2
