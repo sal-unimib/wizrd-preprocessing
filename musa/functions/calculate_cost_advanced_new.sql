@@ -51,10 +51,10 @@ BEGIN
 
         worse_pm_param := GREATEST(pm2_param, pm10_param); -- The worst air quality value
     END IF;
-
+    
     --- parametro relativo alla preferenza di percorsi verdi
-    IF green_param IS TRUE THEN
-        green_param_value := w_green
+    IF green_param = TRUE THEN
+        green_param_value := w_green;
         -- RAISE NOTICE 'Green param: %', green_param_value;
     END IF;
 
