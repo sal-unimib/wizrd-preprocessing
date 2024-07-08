@@ -59,3 +59,20 @@ for FUNC in functions/*.sql; do
 done
 
 echo Imported $COUNT functions.
+
+echo "*** Phase 5 - Importing pollution data... ***"
+
+mkdir -p .cache
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
+panic $? "psql: failed to copy data from DB: ways (id,x1,y1,x2,y2)"
+pollution/./tool pollution/map.png $(cat pollution/bbox.txt) < .cache/ways.csv > .cache/pollution.csv
+panic $? "pollution/tool: failed"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CREATE TABLE pollution (id BIGINT PRIMARY KEY, pollution DOUBLE PRECISION)"
+panic $? "psql: failed to create table: pollution"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy pollution FROM .cache/pollution.csv WITH CSV DELIMITER ','"
+panic $? "psql: failed to copy data to DB: pollution (id,pollution)"
+rm -r .cache
+echo "You can view pollution data using the following SQL query:"
+echo "SELECT ways.*, pollution.pollution FROM ways JOIN pollution ON pollution.id = ways.id"
+
+echo "All done!"
