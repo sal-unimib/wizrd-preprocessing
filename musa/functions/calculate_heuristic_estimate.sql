@@ -8,8 +8,8 @@ DECLARE
     heuristic_estimate float;
 BEGIN
     -- Retrieve the geometry points for the target_vertex and the current_vertex
-    SELECT ST_AsText(the_geom) INTO target_point FROM edges_noded_vertices_pgr WHERE id = target_vertex;
-    SELECT ST_AsText(the_geom) INTO current_point FROM edges_noded_vertices_pgr WHERE id = current_vertex;
+    SELECT ST_AsText(the_geom) INTO target_point FROM ways_vertices_pgr WHERE id = target_vertex;
+    SELECT ST_AsText(the_geom) INTO current_point FROM ways_vertices_pgr WHERE id = current_vertex;
 
     -- Calculate the Euclidean distance between the two points
     SELECT ST_Distance(target_point::geography, current_point::geography) INTO heuristic_estimate;
