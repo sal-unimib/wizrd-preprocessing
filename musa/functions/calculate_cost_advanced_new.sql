@@ -1,4 +1,16 @@
-CREATE OR REPLACE FUNCTION public.calculate_cost_advanced_new(profile_type text, edge_distance double precision, time_cost numeric, road_type character varying, pm2_air_path_quality text, pm10_air_path_quality text, w_green numeric, safe_param_active boolean, traffic_param boolean, distance_param boolean, air_pollution_param boolean, green_param boolean)
+CREATE OR REPLACE FUNCTION public.calculate_cost_advanced_new(
+	profile_type text, 
+	edge_distance double precision, -- TODO we need to use this
+	time_cost numeric, 
+	road_type text, 
+	pm2 integer, 
+	pm10 integer, 
+	w_green double precision, 
+	safe_param_active boolean, 
+	traffic_param boolean, 
+	distance_param boolean,
+	air_pollution_param boolean, 
+	green_param boolean)
  RETURNS numeric
  LANGUAGE plpgsql
 AS $function$
@@ -31,24 +43,10 @@ BEGIN
 
     -- Handle air pollution path param
     IF air_pollution_param IS TRUE THEN
-        pm2_param := CASE  
-            WHEN pm2_air_path_quality = 'good' THEN 0.2
-            WHEN pm2_air_path_quality = 'fair' THEN 0.4
-            WHEN pm2_air_path_quality = 'moderate' THEN 0.5
-            WHEN pm2_air_path_quality = 'poor' THEN 0.7
-            WHEN pm2_air_path_quality = 'very_poor' THEN 0.9
-            ELSE 1.0 -- extremly poor
-        END;
-
-        pm10_param := CASE  
-            WHEN pm10_air_path_quality = 'good' THEN 0.2
-            WHEN pm10_air_path_quality = 'fair' THEN 0.4
-            WHEN pm10_air_path_quality = 'moderate' THEN 0.5
-            WHEN pm10_air_path_quality = 'poor' THEN 0.7
-            WHEN pm10_air_path_quality = 'very_poor' THEN 0.9
-            ELSE 1.0 -- extremly poor
-        END;
-
+        pm2_param := ROUND(pm2 / 350.0, 1);
+        pm10_param := ROUND(pm10 / 350.0, 1);
+        RAISE NOTICE 'pm2: %, pm2_param: %', pm2, pm2_param;
+        RAISE NOTICE 'pm10: %, pm10_param: %', pm10, pm10_param;
         worse_pm_param := GREATEST(pm2_param, pm10_param); -- The worst air quality value
     END IF;
     
@@ -71,17 +69,10 @@ BEGIN
         worse_pm_param = 1;
     END IF;
     
-    -- possibilità di inserire i commenti in console sul database
-    -- RAISE NOTICE 'Air pollution param: %', air_pollution_param;
-    -- RAISE NOTICE 'worse_pm_param: %', worse_pm_param;
-    -- RAISE NOTICE 'pm10_param: %', pm10_param;
-    -- RAISE NOTICE 'pm2_param: %', pm2_param;
     -- RAISE NOTICE 'slope value: %', slope;
     -- RAISE NOTICE 'slope source_elevation: %', source_elevation;
     -- RAISE NOTICE 'slope target_elevation: %', target_elevation;
 
-
-    -- Cost personilized function
     edge_weight := time_cost * safe_param * green_param_value * worse_pm_param;
 
     RETURN edge_weight;
