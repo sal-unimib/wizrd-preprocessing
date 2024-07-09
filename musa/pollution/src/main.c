@@ -10,9 +10,13 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#define SCALE_BACK 0.10
+#define MIN_AQI 10
+#define MAX_AQI 350
+
 /*
  * pollution tool
- * build with -lm; -DDEBUG enables tracing; -DINTERACIVE enables prompt mode
+ * build with -lm; -DDEBUG enables tracing
  */
 
 // gcc main.c -o poltool -lm
@@ -103,67 +107,36 @@ int main(int argc, char *argv[]) {
   double lng_inc = (tr.lng - bl.lng) / (double)geom.cols;
   TRACE("lat_inc: %1.4f, lng_inc: %1.4f\n", lat_inc, lng_inc);
 
-#ifdef INTERACTIVE
-  coord_t req;
-  uchar pol;
-  for (;;) {
-    printf("lat? ");
-    fflush(stdin);
-    scanf("%f", &(req.lat));
-    printf("lng? ");
-    fflush(stdin);
-    scanf("%f", &(req.lng));
-    if (req.lat < bl.lat || req.lat > tr.lat) {
-      fprintf(stderr, "lat out of range\n");
-      continue;
-    }
-    if (req.lng < bl.lng || req.lng > tr.lng) {
-      fprintf(stderr, "lng out of range\n");
-      continue;
-    }
-    pol = get_pollution_data(poldata, geom, bl, tr, lat_inc, lng_inc, req);
-    printf("pol: %2X\n", pol);
-  }
-#else
   int id;
   coord_t start, end;
   char *line = NULL;
   size_t len = 0;
   ssize_t nread;
-  uchar pol_start, pol_end;
-  int valid_nodes, stats_processed = 0, stats_missing = 0;
+  uchar pol_start, pol_end, pol_mean;
+  int stats_processed = 0, stats_missing = 0;
   while ((nread = getline(&line, &len, stdin)) != -1) {
-    valid_nodes = 0;
     // input: id,x1,y1,x2,y2
     sscanf(line, "%d,%f,%f,%f,%f", &id, &(start.lng), &(start.lat), &(end.lng),
            &(end.lat));
     if (start.lat < bl.lat || start.lat > tr.lat || start.lng < bl.lng ||
         start.lng > tr.lng) {
       TRACE("clipping start node %2.4f,%2.4f\n", start.lat, start.lng);
-      pol_start = 0;
-    } else {
-      pol_start = map(poldata, geom, bl, lat_inc, lng_inc, start);
-      valid_nodes += 1;
-    }
-
+      pol_start = MIN_AQI;
+      stats_missing++;
+    } else pol_start = map(poldata, geom, bl, lat_inc, lng_inc, start);
     if (end.lat < bl.lat || end.lat > tr.lat || end.lng < bl.lng ||
         end.lng > tr.lng) {
       TRACE("clipping end node %2.4f,%2.4f\n", end.lat, end.lng);
-      pol_end = 0;
-    } else {
-      pol_end = map(poldata, geom, bl, lat_inc, lng_inc, start);
-      valid_nodes += 1;
-    }
-    if (valid_nodes <= 0) {
+      pol_end = MIN_AQI;
       stats_missing++;
-      TRACE("%s\n", "neither node is valid. assuming zero");
-      printf("%d,%2.4f\n", id, .0f);
-    } else
-      printf("%d,%2.4f\n", id,
-             (pol_start + pol_end) / (double)(valid_nodes * 255));
+    } else pol_end = map(poldata, geom, bl, lat_inc, lng_inc, start);
+    pol_mean = (pol_start + pol_end) / 2;
+    TRACE("pol: start: %d end: %d mean: %d\n", pol_start, pol_end, pol_mean);
+    TRACE("pol%%: %f\n", pol_mean/255.f);
+    printf("%d,%d\n", id,
+             (int) round(MAX_AQI * pol_mean / 255.f));
     stats_processed++;
   }
-#endif
   fprintf(stderr, "Processed %d ways; %d (%.2f%%) data points missing\n",
           stats_processed, stats_missing,
           stats_missing * 100 / (double)stats_processed);

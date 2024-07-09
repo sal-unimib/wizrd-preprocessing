@@ -9,6 +9,8 @@ PGSQL_DB_NAME=mapserver
 PGSQL_USER=admin
 PGSQL_PASS=admin
 
+POLLUTION_PNG=blob.png
+
 panic() {
   RET=$1
 
@@ -65,14 +67,15 @@ echo "*** Phase 5 - Importing pollution data... ***"
 mkdir -p .cache
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
 panic $? "psql: failed to copy data from DB: ways (id,x1,y1,x2,y2)"
-pollution/./tool pollution/map.png $(cat pollution/bbox.txt) < .cache/ways.csv > .cache/pollution.csv
+pollution/./tool pollution/$POLLUTION_PNG $(cat pollution/bbox.txt) < .cache/ways.csv > .cache/pollution.csv
 panic $? "pollution/tool: failed"
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CREATE TABLE pollution (id BIGINT PRIMARY KEY, pollution DOUBLE PRECISION)"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CREATE TABLE pollution (id BIGINT PRIMARY KEY, pm2 INTEGER)"
 panic $? "psql: failed to create table: pollution"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy pollution FROM .cache/pollution.csv WITH CSV DELIMITER ','"
-panic $? "psql: failed to copy data to DB: pollution (id,pollution)"
+panic $? "psql: failed to copy data to DB: pollution (id,pm2)"
 rm -r .cache
-echo "You can view pollution data using the following SQL query:"
-echo "SELECT ways.*, pollution.pollution FROM ways JOIN pollution ON pollution.id = ways.id"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "SELECT w.*, p.pm2 INTO temp FROM ways w JOIN pollution p ON p.id = w.id"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "DROP TABLE ways"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "ALTER TABLE temp RENAME TO ways"
 
 echo "All done!"
