@@ -26,8 +26,9 @@ BEGIN
 
     --- default algorithm
     IF distance_param = TRUE THEN
-        edge_weight := time_cost * safe_param * green_param_value * worse_pm_param;
-        RETURN edge_weight;
+        edge_weight := edge_distance;
+    ELSE
+    	edge_weight := time_cost;
     END IF;
 
     --- refract better this "safe_param" in a way to include diffrent type of profile
@@ -39,8 +40,7 @@ BEGIN
             ELSE 1
         END;
     END IF;
-
-
+    
     -- Handle air pollution path param
     IF air_pollution_param IS TRUE THEN
         pm2_param := ROUND(pm2 / 350.0, 1);
@@ -56,24 +56,11 @@ BEGIN
         -- RAISE NOTICE 'Green param: %', green_param_value;
     END IF;
 
-    -- handle edge cases
-    IF safe_param_active = FALSE THEN
-        safe_param = 1;
-    END IF;
-
-    IF green_param = FALSE THEN
-        green_param_value = 1;
-    END IF;
-
-    IF air_pollution_param = FALSE THEN
-        worse_pm_param = 1;
-    END IF;
-    
     -- RAISE NOTICE 'slope value: %', slope;
     -- RAISE NOTICE 'slope source_elevation: %', source_elevation;
     -- RAISE NOTICE 'slope target_elevation: %', target_elevation;
 
-    edge_weight := time_cost * safe_param * green_param_value * worse_pm_param;
+    edge_weight := edge_weight * safe_param * green_param_value * worse_pm_param;
 
     RETURN edge_weight;
 END;
