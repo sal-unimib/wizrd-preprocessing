@@ -1,113 +1,141 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-  <tag_name name="highway" id="1">
-    <!--<tag_value name="trunk_link" id="105" /> -->   
-    <!--<tag_value name="trunk" id="104" /> -->
-    <tag_value name="bridleway"       id="100" />
-    <tag_value name="byway"           id="101" />
-    <tag_value name="cycleway"        id="102" />
-    <tag_value name="footway"         id="103" />
-    <tag_value name="living_street"   id="104" />
-    <tag_value name="path"            id="105" />
-    <tag_value name="pedestrian"      id="106" />
-    <tag_value name="primary_link"    id="107" />    
-    <tag_value name="primary_link"    id="108" />
-    <tag_value name="primary"         id="109" />
-    <tag_value name="primary"         id="110" />
-    <tag_value name="residential"     id="111" />
-    <tag_value name="road"            id="112" />
-    <tag_value name="secondary_link"  id="113" />
-    <tag_value name="secondary"       id="114" />
-    <tag_value name="service"         id="115" />
-    <tag_value name="services"        id="116" />
-    <tag_value name="steps"           id="117" />
-    <tag_value name="tertiary_link"   id="118" />
-    <tag_value name="tertiary"        id="119" />
-    <tag_value name="track"           id="120" />
-    <tag_value name="unclassified"    id="121" />
-  </tag_name>
-  <tag_name name="cycleway" id="2">
-    <tag_value name="track" priority="1.0" id="201" />
-    <tag_value name="lane" priority="1.5" id="202" />
-    <tag_value name="opposite_lane" priority="1.5" id="203" />
-    <tag_value name="opposite" priority="1.5" id="204" />
-    <tag_value name="shared_lane" priority="1.6" id="205" />
-    <tag_value name="shared" priority="1.6" id="206" />
-    <tag_value name="share_busway" priority="1.6" id="207" />
-  </tag_name>
-  <tag_name name="cycleway:right" id="3">
-    <tag_value name="track" priority="1.0" id="301" />
-    <tag_value name="lane" priority="1.5" id="302" />
-    <tag_value name="opposite_lane" priority="1.5" id="303" />
-    <tag_value name="opposite" priority="1.5" id="304" />
-    <tag_value name="shared_lane" priority="1.6" id="305" />
-    <tag_value name="shared" priority="1.6" id="306" />
-    <tag_value name="share_busway" priority="1.6" id="307" />
-  </tag_name>
-  <tag_name name="cycleway:left" id="4">
-    <tag_value name="track" priority="1.0" id="401" />
-    <tag_value name="lane" priority="1.5" id="402" />
-    <tag_value name="opposite_lane" priority="1.5" id="403" />
-    <tag_value name="opposite" priority="1.5" id="404" />
-    <tag_value name="shared_lane" priority="1.6" id="405" />
-    <tag_value name="shared" priority="1.6" id="406" />
-    <tag_value name="share_busway" priority="1.6" id="407" />
+  <!-- w_green: defaults to 1.0 -->
+  <tag_name name="leisure" id="10">
+    <tag_value name="park"            id="1001" w_green="0.9"/>
+    <tag_value name="garden"          id="1003" w_green="0.9"/>
+    <tag_value name="playground"      id="1004" w_green="0.7"/>
+    <tag_value name="dog_park"      id="1005" w_green="0.6"/>
   </tag_name>
   <!--
-  <tag_name name="tracktype" id="4">
-    <tag_value name="grade1" priority="1.0" id="401" />
-    <tag_value name="grade2" priority="1.1" id="402" />
-    <tag_value name="grade3" priority="1.2" id="403" />
-    <tag_value name="grade4" priority="1.3" id="404" />
-    <tag_value name="grade5" priority="1.4" id="405" />
+  <tag_name name="leisure" id="10">
+    <tag_value name="park"            id="1001" w_green="0.5"/>
+    <tag_value name="nature_reserve"  id="1002" w_green="0.5"/>
+    <tag_value name="garden"          id="1003" w_green="0.5"/>
+    <tag_value name="playground"      id="1004" w_green="0.7"/>
+  </tag_name>
+  <tag_name name="amenity" id="11">
+    <tag_value name="grave_yard"  id="1101" w_green="0.7"/>
+  </tag_name>
+  <tag_name name="landuse" id="12">
+    <tag_value name="park"              id="1201" w_green="0.5" />
+    <tag_value name="allotments"        id="1202" w_green="0.7" />
+    <tag_value name="cemetery"          id="1203" w_green="0.7" />
+    <tag_value name="farmland"          id="1204" w_green="0.5" />
+    <tag_value name="forest"            id="1205" w_green="0.5" />
+    <tag_value name="grass"             id="1206" w_green="0.5" />
+    <tag_value name="greenfield"        id="1207" w_green="0.5" />
+    <tag_value name="meadow"            id="1208" w_green="0.5" />
+    <tag_value name="orchard"           id="1209" w_green="0.5" />
+    <tag_value name="recreation_ground" id="1210" w_green="0.7" />
+    <tag_value name="village_green"     id="1211" w_green="0.5" />
+    <tag_value name="vineyard"          id="1212" w_green="0.5" />
+  </tag_name>
+  <tag_name name="natural_link" id="13">
+    <tag_value name="wood"      id="1301" w_green="0.5" />
+    <tag_value name="scrub"     id="1302" w_green="0.5" />
+    <tag_value name="heath"     id="1303" w_green="0.5" />
+    <tag_value name="grassland" id="1304" w_green="0.5" />
+    <tag_value name="wetland"   id="1305" w_green="0.5" />
+  </tag_name>
+  <tag_name name="tourism" id="14">
+    <tag_value name="camp_site" id="1401" w_green="0.7" />
+  </tag_name>
+  <tag_name name="motor_vehicle" id="16">
+    <tag_value name="no" id="1601" w_green="0.8"/>
   </tag_name>
   -->
-  <!-- w_green: defaults to 1.0 -->
-  <tag_name name="leisure" id="5">
-    <tag_value name="park" id="501" w_green="0.7"/>
-    <tag_value name="nature_reserve" id="502" w_green="0.7"/>
-    <tag_value name="garden" id="503" w_green="0.7"/>
-    <tag_value name="playground" id="504" w_green="0.7"/>
+
+  <!-- overpass turbo queries
+  [out:csv("surface";',')][timeout:25];
+  nwr[surface](45.506527,9.202734,45.527366,9.223731);
+  out body;
+
+  [out:json][timeout:25];
+  nwr[surface="paved"](45.506527,9.202734,45.527366,9.223731);
+  out geom;
+  -->
+
+  <!-- surfaces -->
+  <tag_name name="surface" id="50">
+    <tag_value name="asphalt"               id="5001" w_green="1.0"/>
+    <tag_value name="unpaved"               id="5002" w_green="0.6"/>
+    <tag_value name="paved"                 id="5003" w_green="0.7"/>
+    <tag_value name="concrete"              id="5004" w_green="0.8"/>
+    <tag_value name="paving_stones"         id="5005" w_green="0.9"/>
+    <tag_value name="ground"                id="5006" w_green="0.4"/>
+    <tag_value name="gravel"                id="5007" w_green="0.4"/>
+    <tag_value name="dirt"                  id="5008" w_green="0.4"/>
+    <tag_value name="cobblestone"           id="5009" w_green="0.8"/>
+    <tag_value name="cobblestone:flattened" id="5010" w_green="0.8"/>
+    <tag_value name="grass"                 id="5011" w_green="0.3"/>
+    <tag_value name="sett"                  id="5012" w_green="0.9"/>
+    <tag_value name="fine_gravel"           id="5013" w_green="0.4"/>
+    <tag_value name="tartan"                id="5014" w_green="0.6"/>
+    <tag_value name="compacted"             id="5015" w_green="0.4"/>
+    <tag_value name="grass_paver"           id="5016" w_green="0.4"/>
   </tag_name>
-  <tag_name name="amenity" id="6">
-    <tag_value name="grave_yard" id="601" w_green="0.9"/>
+  <!-- cycleways
+  <tag_name name="cycleway" id="71">
+    <tag_value name="track"         priority="1.0" id="7101" />
+    <tag_value name="lane"          priority="1.5" id="7102" />
+    <tag_value name="opposite_lane" priority="1.5" id="7103" />
+    <tag_value name="opposite"      priority="1.5" id="7104" />
+    <tag_value name="shared_lane"   priority="1.6" id="7105" />
+    <tag_value name="shared"        priority="1.6" id="7106" />
+    <tag_value name="share_busway"  priority="1.6" id="7107" />
   </tag_name>
-  <tag_name name="landuse" id="7">
-    <tag_value name="park" id="701" w_green="0.8" />
-    <tag_value name="allotments" id="702" w_green="0.8" />
-    <tag_value name="cemetery" id="703" w_green="0.8" />
-    <tag_value name="farmland" id="704" w_green="0.8" />
-    <tag_value name="forest" id="705" w_green="0.8" />
-    <tag_value name="grass" id="706" w_green="0.8" />
-    <tag_value name="greenfield" id="707" w_green="0.8" />
-    <tag_value name="meadow" id="708" w_green="0.8" />
-    <tag_value name="orchard" id="709" w_green="0.8" />
-    <tag_value name="recreation_ground" id="710" w_green="0.8" />
-    <tag_value name="village_green" id="711" w_green="0.8" />
-    <tag_value name="vineyard" id="712" w_green="0.8" />
+  <tag_name name="cycleway:right" id="72">
+    <tag_value name="track"         priority="1.0" id="7201" />
+    <tag_value name="lane"          priority="1.5" id="7202" />
+    <tag_value name="opposite_lane" priority="1.5" id="7203" />
+    <tag_value name="opposite"      priority="1.5" id="7204" />
+    <tag_value name="shared_lane"   priority="1.6" id="7205" />
+    <tag_value name="shared"        priority="1.6" id="7206" />
+    <tag_value name="share_busway"  priority="1.6" id="7207" />
   </tag_name>
-  <tag_name name="natural_link" id="8">
-    <tag_value name="wood" id="801" w_green="0.8" />
-    <tag_value name="scrub" id="802" w_green="0.8" />
-    <tag_value name="heath" id="803" w_green="0.8" />
-    <tag_value name="grassland" id="804" w_green="0.8" />
-    <tag_value name="wetland" id="805" w_green="0.8" />
+  <tag_name name="cycleway:left" id="73">
+    <tag_value name="track"         priority="1.0" id="7301" />
+    <tag_value name="lane"          priority="1.5" id="7302" />
+    <tag_value name="opposite_lane" priority="1.5" id="7303" />
+    <tag_value name="opposite"      priority="1.5" id="7304" />
+    <tag_value name="shared_lane"   priority="1.6" id="7305" />
+    <tag_value name="shared"        priority="1.6" id="7306" />
+    <tag_value name="share_busway"  priority="1.6" id="7307" />
   </tag_name>
-  <tag_name name="tourism" id="9">
-    <tag_value name="camp_site" id="901" w_green="0.9" />
+  <tag_name name="tracktype" id="74">
+    <tag_value name="grade1" priority="1.0" id="7401" />
+    <tag_value name="grade2" priority="1.1" id="7402" />
+    <tag_value name="grade3" priority="1.2" id="7403" />
+    <tag_value name="grade4" priority="1.3" id="7404" />
+    <tag_value name="grade5" priority="1.4" id="7405" />
   </tag_name>
-  <!-- w_surface: defaults to 1.0
-  <tag_name name="surface" id="10">
-    <tag_value name="asphalt" id="1001" w_surface="1.0"/>
-    <tag_value name="unpaved" id="1002" w_surface="0.8"/>
-    <tag_value name="paved" id="1003" w_surface="0.9"/>
-    <tag_value name="concrete" id="1004" w_surface="1.0"/>
-    <tag_value name="paving_stones" id="1005" w_surface="0.9"/>
-    <tag_value name="ground" id="1006" w_surface="0.8"/>
-    <tag_value name="gravel" id="1007" w_surface="0.9"/>
-    <tag_value name="dirt" id="1008" w_surface="0.7"/>
-    <tag_value name="cobblestone" id="1009" w_surface="0.8" />
-    <tag_value name="cobblestone:flattened" id="1010" w_surface="0.9" />
+  -->
+  <!-- roads -->
+  <!--
+  <tag_name name="highway" id="90">
+    <tag_value name="bridleway"       id="9000" />
+    <tag_value name="byway"           id="9001" />
+    <tag_value name="cycleway"        id="9002" />
+    <tag_value name="footway"         id="9003" />
+    <tag_value name="living_street"   id="9004" />
+    <tag_value name="path"            id="9005" w_green="0.9"/>
+    <tag_value name="pedestrian"      id="9006" />
+    <tag_value name="primary_link"    id="9007" />    
+    <tag_value name="primary_link"    id="9008" />
+    <tag_value name="primary"         id="9009" />
+    <tag_value name="primary"         id="9010" />
+    <tag_value name="residential"     id="9011" />
+    <tag_value name="road"            id="9012" />
+    <tag_value name="secondary_link"  id="9013" />
+    <tag_value name="secondary"       id="9014" />
+    <tag_value name="service"         id="9015" />
+    <tag_value name="services"        id="9016" />
+    <tag_value name="steps"           id="9017" />
+    <tag_value name="tertiary_link"   id="9018" />
+    <tag_value name="tertiary"        id="9019" />
+    <tag_value name="track"           id="9020" />
+    <tag_value name="unclassified"    id="9021" />
   </tag_name>
   -->
 </configuration>
