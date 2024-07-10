@@ -56,6 +56,10 @@
   out geom;
   -->
 
+  <!-- XXX [jm] Some green paths have "asphalt" as surface and/or 
+                share "paved_stones" with generic footways. 
+                This is an OSM issue. -->
+
   <!-- surfaces -->
   <tag_name name="surface" id="50">
     <tag_value name="asphalt"               id="5001" w_green="1.0"/>

@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION public.calculate_cost_advanced_new(
 	profile_type text, 
-	edge_distance double precision, -- TODO we need to use this
+	edge_distance double precision,
 	time_cost numeric, 
 	road_type text, 
 	pm2 integer, 
@@ -34,9 +34,14 @@ BEGIN
     --- refract better this "safe_param" in a way to include diffrent type of profile
     IF safe_param_active IS TRUE THEN
         safe_param := CASE
-            WHEN road_type = 'pedestrian' THEN 0.8
-            WHEN road_type = 'footway' THEN 0.8
-            WHEN road_type = 'cycleway' AND profile_type = 'micromobility' THEN 0.8
+            WHEN road_type = 'pedestrian' THEN 0.7
+            WHEN road_type = 'living_street' THEN 0.8
+            WHEN road_type = 'footway' THEN 0.7
+            WHEN road_type = 'residential' THEN 0.8
+            WHEN road_type = 'track' THEN 0.7
+            WHEN road_type = 'steps' THEN 0.7 AND profile_type = 'pedestrian' THEN 0.7
+            WHEN road_type = 'cycleway' AND profile_type = 'micromobility' THEN 0.7
+            WHEN road_type = 'cycleway' THEN 0.8
             ELSE 1
         END;
     END IF;
