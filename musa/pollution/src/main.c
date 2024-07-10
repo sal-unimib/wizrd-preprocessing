@@ -10,9 +10,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#define SCALE_BACK 0.10
-#define MIN_AQI 10
-#define MAX_AQI 350
+#define MIN_AQI 1
+#define MAX_AQI 500
 
 /*
  * pollution tool

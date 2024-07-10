@@ -43,8 +43,10 @@ BEGIN
     
     -- Handle air pollution path param
     IF air_pollution_param IS TRUE THEN
-        pm2_param := ROUND(pm2 / 350.0, 1);
-        pm10_param := ROUND(pm10 / 350.0, 1);
+        pm2_param := ROUND(pm2 / 500.0, 2);
+        IF pm2_param < 0.01 THEN pm2_param := 0.01; END IF;
+        pm10_param := ROUND(pm10 / 500.0, 2);
+        IF pm10_param < 0.01 THEN pm10_param := 0.01; END IF;
         RAISE NOTICE 'pm2: %, pm2_param: %', pm2, pm2_param;
         RAISE NOTICE 'pm10: %, pm10_param: %', pm10, pm10_param;
         worse_pm_param := GREATEST(pm2_param, pm10_param); -- The worst air quality value
