@@ -9,6 +9,8 @@ PGSQL_DB_NAME=mapserver
 PGSQL_USER=admin
 PGSQL_PASS=admin
 
+GREEN_AREA_TAG_ID_BELOW=3000
+
 POLLUTION_PNG=blob.png
 
 panic() {
@@ -20,8 +22,11 @@ panic() {
   fi
 }
 
-hash psql 2>/dev/null 
+hash psql 2>/dev/null
 panic $? "PostgreSQL is required to run this script"
+
+osm2pgrouting/build/./osm2pgrouting > /dev/null
+panic $? "You must patch and build osm2pgrouting before running this script"
 
 export PGPASSWORD=$PGSQL_PASS
 
@@ -31,7 +36,7 @@ createdb -U $PGSQL_USER -h $PGSQL_SERVER_ADDR --echo $PGSQL_DB_NAME
 panic $? "psql: failed to recreate DB"
 
 echo "*** Phase 2 - Importing data from OSM dump file... ***"
-../build/./osm2pgrouting \
+osm2pgrouting/build/./osm2pgrouting \
     -f $MAP_FILE \
     -c $CONFIG_FILE \
     --dbname $PGSQL_DB_NAME \
@@ -62,7 +67,16 @@ done
 
 echo Imported $COUNT functions.
 
-echo "*** Phase 5 - Importing pollution data... ***"
+echo "*** Phase 5 - Creating Green Areas and Ways... ***"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CALL make_green_areas($GREEN_AREA_TAG_ID_BELOW)"
+panic $? "psql: failed to create Green Areas"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c " \
+ALTER TABLE ways ADD COLUMN IF NOT EXISTS green boolean DEFAULT false; \
+UPDATE ways w SET green = true FROM green_areas ga WHERE ST_Contains(ga.geom, w.the_geom) OR ST_Crosses(ga.geom, w.the_geom); \
+"
+panic $? "psql: failed to mark Green Ways"
+
+echo "*** Phase 6 - Importing pollution data... ***"
 
 mkdir -p .cache
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"

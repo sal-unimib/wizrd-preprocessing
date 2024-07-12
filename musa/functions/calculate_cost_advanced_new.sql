@@ -1,16 +1,16 @@
 CREATE OR REPLACE FUNCTION public.calculate_cost_advanced_new(
-	profile_type text, 
-	edge_distance double precision,
-	time_cost numeric, 
-	road_type text, 
-	pm2 integer, 
-	pm10 integer, 
-	w_green double precision, 
-	safe_param_active boolean, 
-	traffic_param boolean, 
-	distance_param boolean,
-	air_pollution_param boolean, 
-	green_param boolean)
+    profile_type text, 
+    edge_distance double precision, 
+    time_cost numeric, 
+    road_type text, 
+    pm2 integer, 
+    pm10 integer, 
+    green boolean, 
+    safe_param_active boolean, 
+    traffic_param boolean, 
+    distance_param boolean, 
+    air_pollution_param boolean, 
+    green_param boolean)
  RETURNS numeric
  LANGUAGE plpgsql
 AS $function$
@@ -39,7 +39,7 @@ BEGIN
             WHEN road_type = 'footway' THEN 0.7
             WHEN road_type = 'residential' THEN 0.8
             WHEN road_type = 'track' THEN 0.7
-            WHEN road_type = 'steps' THEN 0.7 AND profile_type = 'pedestrian' THEN 0.7
+            WHEN road_type = 'steps' AND profile_type = 'pedestrian' THEN 0.7
             WHEN road_type = 'cycleway' AND profile_type = 'micromobility' THEN 0.7
             WHEN road_type = 'cycleway' THEN 0.8
             ELSE 1
@@ -58,8 +58,9 @@ BEGIN
     END IF;
     
     --- parametro relativo alla preferenza di percorsi verdi
-    IF green_param = TRUE THEN
-        green_param_value := w_green;
+    IF green_param IS TRUE AND green IS TRUE THEN
+        -- TODO [jm] Weight based on surface type?
+        green_param_value := 0.5;
         -- RAISE NOTICE 'Green param: %', green_param_value;
     END IF;
 
