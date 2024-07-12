@@ -1,2 +1,6 @@
 *.osm
 *.patch
+.cache/
+osm2pgrouting
+!overlay/
+overlay
