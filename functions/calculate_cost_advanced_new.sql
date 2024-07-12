@@ -20,6 +20,7 @@ DECLARE
     safe_param numeric := 1; -- Declare a variable to store the safe_param
     pm2_param numeric; -- Declare a variable to store the pm2_param
     pm10_param numeric; -- Declare a variable to store the pm10_param
+    traffic numeric := 1.0; --
     green_param_value numeric := 1.0;
     worse_pm_param numeric := 1.0;
 BEGIN
@@ -46,7 +47,7 @@ BEGIN
         END;
     END IF;
     
-    -- Handle air pollution path param
+    -- Handle air pollution param
     IF air_pollution_param IS TRUE THEN
         pm2_param := ROUND(pm2 / 500.0, 2);
         IF pm2_param < 0.01 THEN pm2_param := 0.01; END IF;
@@ -57,6 +58,13 @@ BEGIN
         worse_pm_param := GREATEST(pm2_param, pm10_param); -- The worst air quality value
     END IF;
     
+    -- Handle traffic param
+    IF traffic_param IS TRUE THEN
+        traffic := 1.00 - ROUND(traffic / 4.0, 2);
+        IF traffic < 0.01 THEN traffic := 0.01; END IF;
+        RAISE NOTICE 'traffic: %, traffic_param: %', traffic, traffic_param;
+    END IF;
+
     --- parametro relativo alla preferenza di percorsi verdi
     IF green_param IS TRUE AND green IS TRUE THEN
         -- TODO [jm] Weight based on surface type?
@@ -68,7 +76,7 @@ BEGIN
     -- RAISE NOTICE 'slope source_elevation: %', source_elevation;
     -- RAISE NOTICE 'slope target_elevation: %', target_elevation;
 
-    edge_weight := edge_weight * safe_param * green_param_value * worse_pm_param;
+    edge_weight := (edge_weight / traffic) * safe_param * green_param_value * worse_pm_param;
 
     RETURN edge_weight;
 END;

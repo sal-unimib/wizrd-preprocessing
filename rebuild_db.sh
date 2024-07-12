@@ -3,7 +3,7 @@
 MAP_FILE=bicocca.osm
 CONFIG_FILE=mapconfig.xml
 
-PGSQL_SERVER_ADDR=172.18.0.2
+PGSQL_SERVER_ADDR=172.19.0.3
 PGSQL_DB_NAME=mapserver
 
 PGSQL_USER=admin
@@ -91,6 +91,22 @@ psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy pollution 
 panic $? "psql: failed to copy data to DB: pollution (id,pm2)"
 rm -r .cache
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "SELECT w.*, p.pm2 INTO temp FROM ways w JOIN pollution p ON p.id = w.id"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "DROP TABLE ways"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "ALTER TABLE temp RENAME TO ways"
+
+echo "*** Phase 6 - Importing traffic data... ***"
+
+mkdir -p .cache
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
+panic $? "psql: failed to copy data from DB: ways (id,x1,y1,x2,y2)"
+traffic/./tool traffic/$TRAFFIC_PNG $(cat traffic/bbox.txt) < .cache/ways.csv > .cache/traffic.csv
+panic $? "traffic/tool: failed"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CREATE TABLE traffic (id BIGINT PRIMARY KEY, traffic INTEGER)"
+panic $? "psql: failed to create table: traffic"
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy traffic FROM .cache/traffic.csv WITH CSV DELIMITER ','"
+panic $? "psql: failed to copy data to DB: traffic (id,pm2)"
+rm -r .cache
+psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "SELECT w.*, p.traffic INTO temp FROM ways w JOIN traffic p ON p.id = w.id"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "DROP TABLE ways"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "ALTER TABLE temp RENAME TO ways"
 
