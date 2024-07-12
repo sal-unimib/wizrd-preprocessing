@@ -1,13 +1,11 @@
 #!/usr/bin/bash
 
-FUNCTION_NAMES=('calculate_cost_advanced' \
-                'calculate_cost_advanced_v2' \
-                'calculate_time_cost' \
-                'calculate_time_cost_v2' \
-                'calculate_heuristic_estimate')
+FUNCTION_NAMES=('calculate_cost_advanced_new' \
+                'calculate_heuristic_estimate' \
+                'make_green_areas')
 
 PGSQL_SERVER_ADDR=172.18.0.2
-PGSQL_DB_NAME=klaus-db
+PGSQL_DB_NAME=mapserver
 
 PGSQL_USER=admin
 PGSQL_PASS=admin
