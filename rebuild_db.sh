@@ -12,6 +12,8 @@ PGSQL_PASS=admin
 GREEN_AREA_TAG_ID_BELOW=3000
 
 POLLUTION_OVERLAY=blob.png
+MIN_AQI=1
+MAX_AQI=500
 
 panic() {
   RET=$1
@@ -81,7 +83,7 @@ echo "*** Phase 6 - Importing pollution data... ***"
 mkdir -p .cache
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
 panic $? "psql: failed to copy data from DB: ways (id,x1,y1,x2,y2)"
-overlay/./overlay.x86_64 overlay/$POLLUTION_OVERLAY $(cat overlay/bbox.txt) < .cache/ways.csv > .cache/pollution.csv
+overlay/./overlay overlay/$POLLUTION_OVERLAY $(cat overlay/bbox.txt) $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution.csv
 panic $? "overlay: pollution: failed"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CREATE TABLE pollution (id BIGINT PRIMARY KEY, pm2 INTEGER)"
 panic $? "psql: failed to create table: pollution"
