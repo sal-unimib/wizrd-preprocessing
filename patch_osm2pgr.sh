@@ -1,3 +1,5 @@
+#!/usr/bin/bash
+
 PATCH_FILE="patch/columns.patch"
 
 echo "" > $PATCH_FILE

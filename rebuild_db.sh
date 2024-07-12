@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-MAP_FILE=bicocca-2024-07-08.osm
+MAP_FILE=bicocca.osm
 CONFIG_FILE=mapconfig.xml
 
 PGSQL_SERVER_ADDR=172.18.0.2
@@ -11,7 +11,7 @@ PGSQL_PASS=admin
 
 GREEN_AREA_TAG_ID_BELOW=3000
 
-POLLUTION_PNG=blob.png
+POLLUTION_OVERLAY=blob.png
 
 panic() {
   RET=$1
@@ -81,8 +81,8 @@ echo "*** Phase 6 - Importing pollution data... ***"
 mkdir -p .cache
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
 panic $? "psql: failed to copy data from DB: ways (id,x1,y1,x2,y2)"
-pollution/./tool pollution/$POLLUTION_PNG $(cat pollution/bbox.txt) < .cache/ways.csv > .cache/pollution.csv
-panic $? "pollution/tool: failed"
+overlay/./overlay.x86_64 overlay/$POLLUTION_OVERLAY $(cat overlay/bbox.txt) < .cache/ways.csv > .cache/pollution.csv
+panic $? "overlay: pollution: failed"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CREATE TABLE pollution (id BIGINT PRIMARY KEY, pm2 INTEGER)"
 panic $? "psql: failed to create table: pollution"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy pollution FROM .cache/pollution.csv WITH CSV DELIMITER ','"

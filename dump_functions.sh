@@ -12,7 +12,9 @@ PGSQL_PASS=admin
 
 export PGPASSWORD=$PGSQL_PASS
 
+mkdir -p functions/
+
 for FUNCTION_NAME in "${FUNCTION_NAMES[@]}"; do 
     psql -A -t -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c '
-SELECT pg_get_functiondef('\'$FUNCTION_NAME\''::regproc)' -o $FUNCTION_NAME.sql
+SELECT pg_get_functiondef('\'$FUNCTION_NAME\''::regproc)' -o functions/$FUNCTION_NAME.sql
 done
