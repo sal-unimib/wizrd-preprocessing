@@ -34,6 +34,9 @@ panic $? "PostgreSQL is required to run this script"
 osm2pgrouting/build/./osm2pgrouting > /dev/null
 panic $? "You must patch and build osm2pgrouting before running this script"
 
+overlay/./overlay > /dev/null
+panic $? "You must build the overlay tool before running this script"
+
 export PGPASSWORD=$PGSQL_PASS
 
 echo "*** Phase 1 - Recreating DB from scratch... ***"

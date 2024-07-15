@@ -158,9 +158,10 @@ int main(int argc, char* argv[]) {
     int stats_rows = 0, stats_missing = 0;
 
     if (argc < 8) {
-        panic(
+        printf(
             "usage: overlay <image file> <sw corner lon> <sw corner lat> <ne "
             "corner lon> <ne corner lat> <lowest value> <highest value>");
+        exit(EXIT_SUCCESS);
     }
 
     // load overlay image
