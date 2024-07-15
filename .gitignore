@@ -2,5 +2,4 @@
 *.patch
 .cache/
 osm2pgrouting
-!overlay/
-overlay
+overlay/overlay
