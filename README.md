@@ -102,8 +102,10 @@ For more information refer to [`overlay/README.md`](https://raw.githubuserconten
 
 If you want to add or change an overlay in the processing pipeline, you need to modify step 6 and its variables. The code currently creates CSV files for each overlay, merges them, then uploads them to a new table in the database. The table is then joined with `ways` on `id` and the source tables are dropped. This process will likely change in the future when more data points are present.
 
-##### Example
+##### Examples
 
-`overlay/./overlay overlay/blob.png 9.202734 45.506527 9.223731 45.527366 0 499 < ways.csv > pollution.csv`
+You can call the overlay tool as follows: `overlay/./overlay overlay/blob.png 9.202734 45.506527 9.223731 45.527366 0 499 < ways.csv > pollution.csv`
+
+The following picture shows an image file that can be used as an overlay. The image was created with GIMP by drawing over a screenshot of the bounding box (see the files in `overlay/map/`). The black areas express the lowest percentages, while the white areas the highest. The image has been flattened, downsampled, converted to grayscale (1 channel), the alpha channel was removed, and it was exported as PNG.
 
 ![blob](https://github.com/user-attachments/assets/ebbef933-6077-4411-aa81-7ff3db51446d)
