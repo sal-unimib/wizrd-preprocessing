@@ -94,8 +94,7 @@ psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CALL make_green_
 panic $? "psql: failed to create Green Areas"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c " \
 ALTER TABLE ways ADD COLUMN IF NOT EXISTS green boolean DEFAULT false; \
-UPDATE ways w SET green = true FROM green_areas ga WHERE ST_Contains(ga.geom, w.the_geom) OR ST_Crosses(ga.geom, w.the_geom); \
-"
+UPDATE ways w SET green = true FROM green_areas ga WHERE (ST_Contains(ga.geom, w.the_geom) OR ST_Crosses(ga.geom, w.the_geom)) AND w.highway IS NOT NULL"
 panic $? "psql: failed to mark Green Ways"
 
 # -----------------------------------------------------------------------------
