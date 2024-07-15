@@ -1,10 +1,11 @@
 #!/usr/bin/bash
 
-MAP_FILE=bicocca.osm
+# get_map.sh
+# Downloads an OSM file containing geometry data for the specified bounding box
+# Copyright (c) 2024 Jacopo Maltagliati (j.maltagliati@campus.unimib.it)
+# This file is part of the MUSA micromobility project
 
-# ~8MB
-BB_BOTTOM_LEFT=9.202734,45.506527
-BB_TOP_RIGHT=9.223731,45.527366
+source globals.sh
 
 panic() {
   RET=$1
@@ -23,7 +24,7 @@ panic $? "\"osmconvert\" is required to run this script"
 
 mkdir -p .cache/
 
-curl -o .cache/temp.osm https://overpass-api.de/api/map?bbox=$BB_BOTTOM_LEFT,$BB_TOP_RIGHT
+curl -o .cache/temp.osm https://overpass-api.de/api/map?bbox=$BB_SW_LON,$BB_SW_LAT,$BB_NE_LON,$BB_NE_LAT
 osmconvert .cache/temp.osm --complete-ways --drop-author --drop-version --out-osm -o=$MAP_FILE
 
 rm -r .cache/

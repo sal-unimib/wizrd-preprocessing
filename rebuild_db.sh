@@ -1,13 +1,11 @@
 #!/usr/bin/bash
 
-MAP_FILE=bicocca.osm
+# rebuild_db.sh
+# Recreates the database from scratch
+# Copyright (c) 2024 Jacopo Maltagliati (j.maltagliati@campus.unimib.it)
+# This file is part of the MUSA micromobility project
+
 CONFIG_FILE=mapconfig.xml
-
-PGSQL_SERVER_ADDR=172.18.0.2
-PGSQL_DB_NAME=mapserver
-
-PGSQL_USER=admin
-PGSQL_PASS=admin
 
 GREEN_AREA_TAG_ID_BELOW=3000
 
@@ -18,6 +16,8 @@ MAX_AQI=500
 TRAFFIC_OVERLAY=bicocca-traffic.png
 MIN_TRAFFIC=1
 MAX_TRAFFIC=4
+
+source globals.sh
 
 panic() {
   RET=$1
@@ -86,15 +86,14 @@ UPDATE ways w SET green = true FROM green_areas ga WHERE ST_Contains(ga.geom, w.
 panic $? "psql: failed to mark Green Ways"
 
 echo "*** Phase 6 - Importing data from overlays... ***"
-
 mkdir -p .cache
 
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
 panic $? "psql: failed to copy data from DB: ways (id,x1,y1,x2,y2)"
 
-overlay/./overlay overlay/$POLLUTION_OVERLAY $(cat overlay/bbox.txt) $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution.csv
+overlay/./overlay overlay/$POLLUTION_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution.csv
 panic $? "overlay: failed to create air pollution data"
-overlay/./overlay overlay/$TRAFFIC_OVERLAY $(cat overlay/bbox.txt) $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic.csv
+overlay/./overlay overlay/$TRAFFIC_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic.csv
 panic $? "overlay: failed to create traffic data"
 paste -d , .cache/pollution.csv .cache/traffic.csv > .cache/overlays.csv
 panic $? "paste: failed to merge overlays"

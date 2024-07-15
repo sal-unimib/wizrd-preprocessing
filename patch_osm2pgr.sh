@@ -1,5 +1,10 @@
 #!/usr/bin/bash
 
+# patch_osm2pgr.sh
+# Computes and applies the patches contained in ./patch/ to osm2pgrouting 
+# Copyright (c) 2024 Jacopo Maltagliati (j.maltagliati@campus.unimib.it)
+# This file is part of the MUSA micromobility project
+
 PATCH_FILE="patch/columns.patch"
 
 echo "" > $PATCH_FILE

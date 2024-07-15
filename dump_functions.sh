@@ -1,14 +1,15 @@
 #!/usr/bin/bash
 
+# dump_functions.sh
+# Dumps all custom function definitions from the DB 
+# Copyright (c) 2024 Jacopo Maltagliati (j.maltagliati@campus.unimib.it)
+# This file is part of the MUSA micromobility project
+
 FUNCTION_NAMES=('calculate_cost_advanced_new' \
                 'calculate_heuristic_estimate' \
                 'make_green_areas')
 
-PGSQL_SERVER_ADDR=172.18.0.2
-PGSQL_DB_NAME=mapserver
-
-PGSQL_USER=admin
-PGSQL_PASS=admin
+source globals.sh
 
 export PGPASSWORD=$PGSQL_PASS
 
