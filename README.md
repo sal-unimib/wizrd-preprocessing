@@ -54,6 +54,8 @@ Steps 1-4 only need to be executed the first time you clone the repo: from then 
 
 The bounding box is currently defined as the smaller rectangular area that contains the polygon that roughly covers metro stations Bignami M5 and Bicocca M5 (west), the Vivaio Bicocca (south-east), via Breda on the other side of the railway (east) and the U14 and U24 buildings (north-east).
 
+![bicocca](https://github.com/user-attachments/assets/cb76c5ae-a200-4a53-a0b3-e57185168d11)
+
 The bounding box is expressed as the coordinates of its southwestern and northeastern corners, which are specified in the `BB_[SW,NE]_[LAT,LON]` variables in `globals.sh`.
 
 #### Functions and Procedures
@@ -104,3 +106,4 @@ If you want to add or change an overlay in the processing pipeline, you need to 
 
 `overlay/./overlay overlay/blob.png 9.202734 45.506527 9.223731 45.527366 0 499 < ways.csv > pollution.csv`
 
+![blob](https://github.com/user-attachments/assets/ebbef933-6077-4411-aa81-7ff3db51446d)
