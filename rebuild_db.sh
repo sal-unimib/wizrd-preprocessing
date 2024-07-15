@@ -39,12 +39,18 @@ panic $? "You must build the overlay tool before running this script"
 
 export PGPASSWORD=$PGSQL_PASS
 
-echo "*** Phase 1 - Recreating DB from scratch... ***"
+# -----------------------------------------------------------------------------
+
+echo "*** Recreating DB from scratch... ***"
+
 dropdb --force -U $PGSQL_USER -h $PGSQL_SERVER_ADDR --echo $PGSQL_DB_NAME
 createdb -U $PGSQL_USER -h $PGSQL_SERVER_ADDR --echo $PGSQL_DB_NAME
 panic $? "psql: failed to recreate DB"
 
-echo "*** Phase 2 - Importing data from OSM dump file... ***"
+# -----------------------------------------------------------------------------
+
+echo "*** Importing data from OSM dump file... ***"
+
 osm2pgrouting/build/./osm2pgrouting \
     -f $MAP_FILE \
     -c $CONFIG_FILE \
@@ -53,18 +59,22 @@ osm2pgrouting/build/./osm2pgrouting \
     -W $PGSQL_PASS \
     -h $PGSQL_SERVER_ADDR \
     --tags \
-    --attributes
+    --attributes \
+    --addnodes
 panic $? "osm2pgrouting: failed to populate DB"
 
 echo "Renaming columns..."
+
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c 'ALTER TABLE ways RENAME COLUMN gid TO id;'
 panic $? "psql: failed to rename column: ways.gid -> ways.id"
 
-echo "*** Phase 3 - Adding required extensions... ***"
+# -----------------------------------------------------------------------------
+
+echo "*** Importing functions... ***"
+
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c 'CREATE EXTENSION pgRouting CASCADE'
 panic $? "psql: failed to create extension: pgRouting"
 
-echo "*** Phase 4 - Importing functions... ***"
 COUNT=0
 
 for FUNC in functions/*.sql; do
@@ -76,7 +86,10 @@ done
 
 echo Imported $COUNT functions.
 
-echo "*** Phase 5 - Creating Green Areas and Ways... ***"
+# -----------------------------------------------------------------------------
+
+echo "*** Creating Green Areas and Ways... ***"
+
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CALL make_green_areas($GREEN_AREA_TAG_ID_BELOW)"
 panic $? "psql: failed to create Green Areas"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c " \
@@ -85,19 +98,26 @@ UPDATE ways w SET green = true FROM green_areas ga WHERE ST_Contains(ga.geom, w.
 "
 panic $? "psql: failed to mark Green Ways"
 
-echo "*** Phase 6 - Importing data from overlays... ***"
+# -----------------------------------------------------------------------------
+
+echo "*** Importing external data... ***"
+
 mkdir -p .cache
 
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
 panic $? "psql: failed to copy data from DB: ways (id,x1,y1,x2,y2)"
 
+echo "Processing air pollution overlay..."
 overlay/./overlay overlay/$POLLUTION_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution.csv
 panic $? "overlay: failed to create air pollution data"
+
+echo "Processing traffic overlay..."
 overlay/./overlay overlay/$TRAFFIC_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic.csv
 panic $? "overlay: failed to create traffic data"
+
+echo "Creating overlays table"
 paste -d , .cache/pollution.csv .cache/traffic.csv > .cache/overlays.csv
 panic $? "paste: failed to merge overlays"
-
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CREATE TABLE overlays (id BIGINT PRIMARY KEY, pm2 INTEGER, id2 BIGINT, traffic INTEGER)"
 panic $? "psql: failed to create table: overlays"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy overlays FROM .cache/overlays.csv WITH CSV DELIMITER ','"
@@ -105,10 +125,16 @@ panic $? "psql: failed to copy data to DB: overlays (id,pm2,traffic)"
 
 rm -r .cache
 
+# -----------------------------------------------------------------------------
+
+echo "*** Merging external data... ***"
+
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "SELECT w.*, o.pm2, o.traffic INTO temp FROM ways w JOIN overlays o ON o.id = w.id"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "DROP TABLE ways"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "ALTER TABLE temp RENAME TO ways"
 panic $? "psql: failed to recreate main table: ways"
 psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "DROP TABLE overlays"
 
-echo "All done!"
+# -----------------------------------------------------------------------------
+
+echo "*** All done! ***"
