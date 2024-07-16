@@ -7,15 +7,6 @@
 
 source globals.sh
 
-panic() {
-  RET=$1
-
-  if [ $RET -ne 0 ]; then
-    echo FATAL: $2
-    exit $RET
-  fi
-}
-
 hash curl 2>/dev/null 
 panic $? "\"curl\" is required to run this script"
 

@@ -20,3 +20,13 @@ BB_SW_LON=9.202734
 BB_SW_LAT=45.506527
 BB_NE_LON=9.223731
 BB_NE_LAT=45.527366
+
+# Function for exiting on error
+panic() {
+  RET=$1
+
+  if [ $RET -ne 0 ]; then
+    echo FATAL: $2
+    exit $RET
+  fi
+}

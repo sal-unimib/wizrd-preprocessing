@@ -19,14 +19,7 @@ MAX_TRAFFIC=4
 
 source globals.sh
 
-panic() {
-  RET=$1
 
-  if [ $RET -ne 0 ]; then
-    echo FATAL: $2
-    exit $RET
-  fi
-}
 
 hash psql 2>/dev/null
 panic $? "PostgreSQL is required to run this script"
