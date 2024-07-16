@@ -39,7 +39,9 @@ export PGPASSWORD=$PGSQL_PASS
 
 # -----------------------------------------------------------------------------
 
-echo "*** Recreating DB from scratch... ***"
+echo "-----------------------------------------------------------------------------"
+echo " Recreating DB from scratch..."
+echo "-----------------------------------------------------------------------------"
 
 dropdb --force -U $PGSQL_USER -h $PGSQL_SERVER_ADDR --echo $PGSQL_DB_NAME
 createdb -U $PGSQL_USER -h $PGSQL_SERVER_ADDR --echo $PGSQL_DB_NAME
@@ -47,7 +49,9 @@ panic $? "psql: failed to recreate DB"
 
 # -----------------------------------------------------------------------------
 
-echo "*** Importing data from OSM dump file... ***"
+echo "-----------------------------------------------------------------------------"
+echo " Importing data from OSM dump file..."
+echo "-----------------------------------------------------------------------------"
 
 osm2pgrouting/build/./osm2pgrouting \
     -f $MAP_FILE \
@@ -67,7 +71,9 @@ query "ALTER TABLE ways RENAME COLUMN gid TO id"
 
 # -----------------------------------------------------------------------------
 
-echo "*** Importing functions... ***"
+echo "-----------------------------------------------------------------------------"
+echo " Importing functions..."
+echo "-----------------------------------------------------------------------------"
 
 query "CREATE EXTENSION pgRouting CASCADE"
 
@@ -84,17 +90,21 @@ echo Imported $COUNT functions.
 
 # -----------------------------------------------------------------------------
 
-echo "*** Creating Green Areas and Ways... ***"
+echo "-----------------------------------------------------------------------------"
+echo " Creating Green Areas and Ways..."
+echo "-----------------------------------------------------------------------------"
 
 query "CALL make_green_areas($GREEN_AREA_TAG_ID_BELOW)"
 panic $? "psql: failed to create Green Areas"
 query " \
-ALTER TABLE ways ADD COLUMN IF NOT EXISTS green boolean DEFAULT false; \
-UPDATE ways w SET green = true FROM green_areas ga WHERE (ST_Contains(ga.geom, w.the_geom) OR ST_Crosses(ga.geom, w.the_geom)) AND w.highway IS NOT NULL"
+  ALTER TABLE ways ADD COLUMN IF NOT EXISTS green boolean DEFAULT false; \
+  UPDATE ways w SET green = true FROM green_areas ga WHERE (ST_Contains(ga.geom, w.the_geom) OR ST_Crosses(ga.geom, w.the_geom)) AND w.highway IS NOT NULL"
 
 # -----------------------------------------------------------------------------
 
-echo "*** Importing external data... ***"
+echo "-----------------------------------------------------------------------------"
+echo " Importing external data..."
+echo "-----------------------------------------------------------------------------"
 
 mkdir -p .cache
 
@@ -108,7 +118,7 @@ echo "Processing traffic overlay..."
 overlay/./overlay overlay/$TRAFFIC_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic.csv
 panic $? "overlay: failed to create traffic data"
 
-echo "Creating overlays table..."
+echo "Creating overlays table"
 paste -d , .cache/pollution.csv .cache/traffic.csv > .cache/overlays.csv
 panic $? "paste: failed to merge overlays"
 query "CREATE TABLE overlays (id BIGINT PRIMARY KEY, pm2 INTEGER, id2 BIGINT, traffic INTEGER)"
@@ -116,12 +126,18 @@ query "\copy overlays FROM .cache/overlays.csv WITH CSV DELIMITER ','"
 
 rm -r .cache
 
-echo " Merging tables..."
+# -----------------------------------------------------------------------------
+
+echo "-----------------------------------------------------------------------------"
+echo " Merging external data..."
+echo "-----------------------------------------------------------------------------"
+
 query "SELECT w.*, o.pm2, o.traffic INTO temp FROM ways w JOIN overlays o ON o.id = w.id"
 query "DROP TABLE ways"
 query "ALTER TABLE temp RENAME TO ways"
 query "DROP TABLE overlays"
 
-# -----------------------------------------------------------------------------
+echo "-----------------------------------------------------------------------------"
+echo " All done!"
+echo "-----------------------------------------------------------------------------"
 
-echo "*** All done! ***"
