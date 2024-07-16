@@ -19,7 +19,12 @@ MAX_TRAFFIC=4
 
 source globals.sh
 
+query() {
+    QUERY=$1
 
+    psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "$QUERY"
+    panic $? "psql: failed to execute query: \"$QUERY\""
+}
 
 hash psql 2>/dev/null
 panic $? "PostgreSQL is required to run this script"
@@ -58,15 +63,13 @@ panic $? "osm2pgrouting: failed to populate DB"
 
 echo "Renaming columns..."
 
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c 'ALTER TABLE ways RENAME COLUMN gid TO id;'
-panic $? "psql: failed to rename column: ways.gid -> ways.id"
+query "ALTER TABLE ways RENAME COLUMN gid TO id"
 
 # -----------------------------------------------------------------------------
 
 echo "*** Importing functions... ***"
 
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c 'CREATE EXTENSION pgRouting CASCADE'
-panic $? "psql: failed to create extension: pgRouting"
+query "CREATE EXTENSION pgRouting CASCADE"
 
 COUNT=0
 
@@ -83,12 +86,11 @@ echo Imported $COUNT functions.
 
 echo "*** Creating Green Areas and Ways... ***"
 
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CALL make_green_areas($GREEN_AREA_TAG_ID_BELOW)"
+query "CALL make_green_areas($GREEN_AREA_TAG_ID_BELOW)"
 panic $? "psql: failed to create Green Areas"
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c " \
+query " \
 ALTER TABLE ways ADD COLUMN IF NOT EXISTS green boolean DEFAULT false; \
 UPDATE ways w SET green = true FROM green_areas ga WHERE (ST_Contains(ga.geom, w.the_geom) OR ST_Crosses(ga.geom, w.the_geom)) AND w.highway IS NOT NULL"
-panic $? "psql: failed to mark Green Ways"
 
 # -----------------------------------------------------------------------------
 
@@ -96,8 +98,7 @@ echo "*** Importing external data... ***"
 
 mkdir -p .cache
 
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
-panic $? "psql: failed to copy data from DB: ways (id,x1,y1,x2,y2)"
+query "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
 
 echo "Processing air pollution overlay..."
 overlay/./overlay overlay/$POLLUTION_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution.csv
@@ -107,25 +108,19 @@ echo "Processing traffic overlay..."
 overlay/./overlay overlay/$TRAFFIC_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic.csv
 panic $? "overlay: failed to create traffic data"
 
-echo "Creating overlays table"
+echo "Creating overlays table..."
 paste -d , .cache/pollution.csv .cache/traffic.csv > .cache/overlays.csv
 panic $? "paste: failed to merge overlays"
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "CREATE TABLE overlays (id BIGINT PRIMARY KEY, pm2 INTEGER, id2 BIGINT, traffic INTEGER)"
-panic $? "psql: failed to create table: overlays"
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "\copy overlays FROM .cache/overlays.csv WITH CSV DELIMITER ','"
-panic $? "psql: failed to copy data to DB: overlays (id,pm2,traffic)"
+query "CREATE TABLE overlays (id BIGINT PRIMARY KEY, pm2 INTEGER, id2 BIGINT, traffic INTEGER)"
+query "\copy overlays FROM .cache/overlays.csv WITH CSV DELIMITER ','"
 
 rm -r .cache
 
-# -----------------------------------------------------------------------------
-
-echo "*** Merging external data... ***"
-
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "SELECT w.*, o.pm2, o.traffic INTO temp FROM ways w JOIN overlays o ON o.id = w.id"
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "DROP TABLE ways"
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "ALTER TABLE temp RENAME TO ways"
-panic $? "psql: failed to recreate main table: ways"
-psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "DROP TABLE overlays"
+echo " Merging tables..."
+query "SELECT w.*, o.pm2, o.traffic INTO temp FROM ways w JOIN overlays o ON o.id = w.id"
+query "DROP TABLE ways"
+query "ALTER TABLE temp RENAME TO ways"
+query "DROP TABLE overlays"
 
 # -----------------------------------------------------------------------------
 
