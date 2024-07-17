@@ -13,7 +13,7 @@ POLLUTION_OVERLAY=blob.png
 MIN_AQI=1
 MAX_AQI=500
 
-TRAFFIC_OVERLAY=bicocca-traffic.png
+TRAFFIC_OVERLAY=bicocca-traffic2.png
 MIN_TRAFFIC=1
 MAX_TRAFFIC=4
 
@@ -82,7 +82,6 @@ COUNT=0
 for FUNC in functions/*.sql; do
   echo Processing $FUNC...
   psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -f $FUNC
-  panic $? "psql: failed to add function to DB"
   ((COUNT=COUNT+1))
 done
 
@@ -103,7 +102,22 @@ query " \
 # -----------------------------------------------------------------------------
 
 echo "-----------------------------------------------------------------------------"
-echo " Importing external data..."
+echo " Merging elevation data..."
+echo "-----------------------------------------------------------------------------"
+
+echo "Creating elevation table..."
+query "CREATE TABLE elevation (id BIGINT PRIMARY KEY, source_elevation NUMERIC, target_elevation NUMERIC)"
+query "\copy elevation FROM elevation/data.csv WITH CSV DELIMITER ','"
+
+echo "Merging into original table..."
+query "SELECT w.*, e.source_elevation, e.target_elevation INTO temp FROM ways w JOIN elevation e ON e.id = w.id"
+query "DROP TABLE ways, elevation"
+query "ALTER TABLE temp RENAME TO ways"
+
+# -----------------------------------------------------------------------------
+
+echo "-----------------------------------------------------------------------------"
+echo " Updating overlays..."
 echo "-----------------------------------------------------------------------------"
 
 mkdir -p .cache
@@ -118,24 +132,14 @@ echo "Processing traffic overlay..."
 overlay/./overlay overlay/$TRAFFIC_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic.csv
 panic $? "overlay: failed to create traffic data"
 
-echo "Creating overlays table"
+echo "Creating overlays table..."
 paste -d , .cache/pollution.csv .cache/traffic.csv > .cache/overlays.csv
 panic $? "paste: failed to merge overlays"
 query "CREATE TABLE overlays (id BIGINT PRIMARY KEY, pm2 INTEGER, id2 BIGINT, traffic INTEGER)"
 query "\copy overlays FROM .cache/overlays.csv WITH CSV DELIMITER ','"
+query "ALTER TABLE overlays DROP COLUMN id2"
 
 rm -r .cache
-
-# -----------------------------------------------------------------------------
-
-echo "-----------------------------------------------------------------------------"
-echo " Merging external data..."
-echo "-----------------------------------------------------------------------------"
-
-query "SELECT w.*, o.pm2, o.traffic INTO temp FROM ways w JOIN overlays o ON o.id = w.id"
-query "DROP TABLE ways"
-query "ALTER TABLE temp RENAME TO ways"
-query "DROP TABLE overlays"
 
 echo "-----------------------------------------------------------------------------"
 echo " All done!"
