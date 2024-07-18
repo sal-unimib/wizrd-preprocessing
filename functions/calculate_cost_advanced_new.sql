@@ -6,11 +6,12 @@ CREATE OR REPLACE FUNCTION public.calculate_cost_advanced_new(
     pm2 integer, 
     pm10 integer,
     traffic integer,
-    green boolean, 
+    green boolean,
+    is_air_quality boolean,
+    is_distance boolean,
+    is_green boolean,
     is_safe boolean,
-    is_distance boolean, 
-    is_air_quality boolean, 
-    is_green boolean)
+    is_traffic boolean)
  RETURNS numeric
  LANGUAGE plpgsql
 AS $function$
@@ -33,7 +34,7 @@ BEGIN
     END IF;
 
     -- refract better this "safe_param" in a way to include diffrent type of profile
-    IF FALSE IS TRUE THEN -- QUESTA CONDIZIONE VA MODIFICATA IN BASE AL TIPO DI MEZZO 
+    IF is_safe IS TRUE THEN -- QUESTA CONDIZIONE VA MODIFICATA IN BASE AL TIPO DI MEZZO 
         safe_param := CASE
             WHEN road_type = 'pedestrian' THEN 0.7
             WHEN road_type = 'living_street' THEN 0.8
@@ -48,7 +49,7 @@ BEGIN
     END IF;
 
     -- Handle traffic param
-    IF is_safe IS TRUE THEN
+    IF is_traffic IS TRUE THEN
         traffic_param := 1.0 - ROUND(traffic / 4.0, 2);
         IF traffic_param < 0.01 THEN traffic_param := 0.01; END IF;
     END IF;
