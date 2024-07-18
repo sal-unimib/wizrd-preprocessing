@@ -35,6 +35,16 @@
     <tag_value name="camp_site" id="1401" />
   </tag_name>
   <!-- Road Classification - 'tag_id's 5000 to 8999 -->
+  <tag_name name="footway" id="50">
+    <tag_value name="crossing"        priority="1.6" id="5001" />
+    <tag_value name="sidewalk"        priority="1.2" id="5002" />
+    <tag_value name="access_isle"     priority="1.0" id="5003" />
+    <tag_value name="traffic_island"  priority="1.0" id="5004" />
+    <tag_value name="alley"           priority="1.0" id="5005" />
+    <tag_value name="residential"     priority="1.0" id="5006" />
+    <tag_value name="link"            priority="1.0" id="5007" />
+    <tag_value name="lane"            priority="1.0" id="5008" />
+  </tag_name>
   <tag_name name="cycleway" id="71">
     <tag_value name="track"         priority="1.0" id="7101" />
     <tag_value name="lane"          priority="1.5" id="7102" />
@@ -72,21 +82,20 @@
   <tag_name name="highway" id="75">
     <tag_value name="bridleway"       id="7500" />
     <tag_value name="byway"           id="7501" />
-    <tag_value name="cycleway"        id="7502" />
-    <tag_value name="footway"         id="7503" />
-    <tag_value name="living_street"   id="7504" />
-    <tag_value name="path"            id="7505" />
-    <tag_value name="pedestrian"      id="7506" />
-    <tag_value name="primary_link"    id="7507" />    
-    <tag_value name="primary_link"    id="7508" />
-    <tag_value name="primary"         id="7509" />
+    <tag_value name="crossing"        id="7502" />
+    <tag_value name="cycleway"        id="7503" />
+    <tag_value name="footpath"        id="7504" />
+    <tag_value name="footway"         id="7505" />
+    <tag_value name="living_street"   id="7506" />
+    <tag_value name="path"            id="7507" />
+    <tag_value name="pedestrian"      id="7508" />
+    <tag_value name="primary_link"    id="7509" />
     <tag_value name="primary"         id="7510" />
     <tag_value name="residential"     id="7511" />
     <tag_value name="road"            id="7512" />
     <tag_value name="secondary_link"  id="7513" />
     <tag_value name="secondary"       id="7514" />
     <tag_value name="service"         id="7515" />
-    <tag_value name="services"        id="7516" />
     <tag_value name="steps"           id="7517" />
     <tag_value name="tertiary_link"   id="7518" />
     <tag_value name="tertiary"        id="7519" />
