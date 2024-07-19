@@ -34,54 +34,7 @@
   <tag_name name="tourism" id="14">
     <tag_value name="camp_site" id="1401" />
   </tag_name>
-  <!-- Road Classification - 'tag_id's 5000 to 8999 -->
-  <tag_name name="footway" id="50">
-    <tag_value name="crossing"        priority="1.6" id="5001" />
-    <tag_value name="sidewalk"        priority="1.2" id="5002" />
-    <tag_value name="access_isle"     priority="1.0" id="5003" />
-    <tag_value name="traffic_island"  priority="1.0" id="5004" />
-    <tag_value name="alley"           priority="1.0" id="5005" />
-    <tag_value name="residential"     priority="1.0" id="5006" />
-    <tag_value name="link"            priority="1.0" id="5007" />
-    <tag_value name="lane"            priority="1.0" id="5008" />
-  </tag_name>
-  <tag_name name="cycleway" id="71">
-    <tag_value name="track"         priority="1.0" id="7101" />
-    <tag_value name="lane"          priority="1.5" id="7102" />
-    <tag_value name="opposite_lane" priority="1.5" id="7103" />
-    <tag_value name="opposite"      priority="1.5" id="7104" />
-    <tag_value name="shared_lane"   priority="1.6" id="7105" />
-    <tag_value name="shared"        priority="1.6" id="7106" />
-    <tag_value name="share_busway"  priority="1.6" id="7107" />
-  </tag_name>
-  <tag_name name="cycleway:right" id="72">
-    <tag_value name="track"         priority="1.0" id="7201" />
-    <tag_value name="lane"          priority="1.5" id="7202" />
-    <tag_value name="opposite_lane" priority="1.5" id="7203" />
-    <tag_value name="opposite"      priority="1.5" id="7204" />
-    <tag_value name="shared_lane"   priority="1.6" id="7205" />
-    <tag_value name="shared"        priority="1.6" id="7206" />
-    <tag_value name="share_busway"  priority="1.6" id="7207" />
-  </tag_name>
-  <tag_name name="cycleway:left" id="73">
-    <tag_value name="track"         priority="1.0" id="7301" />
-    <tag_value name="lane"          priority="1.5" id="7302" />
-    <tag_value name="opposite_lane" priority="1.5" id="7303" />
-    <tag_value name="opposite"      priority="1.5" id="7304" />
-    <tag_value name="shared_lane"   priority="1.6" id="7305" />
-    <tag_value name="shared"        priority="1.6" id="7306" />
-    <tag_value name="share_busway"  priority="1.6" id="7307" />
-  </tag_name>
-  <tag_name name="tracktype" id="74">
-    <tag_value name="grade1" priority="1.0" id="7401" />
-    <tag_value name="grade2" priority="1.1" id="7402" />
-    <tag_value name="grade3" priority="1.2" id="7403" />
-    <tag_value name="grade4" priority="1.3" id="7404" />
-    <tag_value name="grade5" priority="1.4" id="7405" />
-  </tag_name>
   <tag_name name="highway" id="75">
-    <tag_value name="bridleway"       id="7500" />
-    <tag_value name="byway"           id="7501" />
     <tag_value name="crossing"        id="7502" />
     <tag_value name="cycleway"        id="7503" />
     <tag_value name="footpath"        id="7504" />
@@ -117,8 +70,7 @@
     <tag_value name="grass"                 id="9911"/>
     <tag_value name="sett"                  id="9912"/>
     <tag_value name="fine_gravel"           id="9913"/>
-    <tag_value name="tartan"                id="9914"/>
-    <tag_value name="compacted"             id="9915"/>
-    <tag_value name="grass_paver"           id="9916"/>
+    <tag_value name="compacted"             id="9914"/>
+    <tag_value name="grass_paver"           id="9915"/>
   </tag_name>
 </configuration>
