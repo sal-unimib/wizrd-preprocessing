@@ -6,12 +6,13 @@ CREATE OR REPLACE FUNCTION public.calculate_cost_advanced_new(
     pm2 integer, 
     pm10 integer,
     traffic integer,
-    green boolean, 
-    is_safe boolean, 
-    is_traffic boolean, 
-    is_distance boolean, 
-    is_air_quality boolean, 
-    is_green boolean)
+    maxspeed_forward double precision,
+    green boolean,
+    is_air_quality boolean,
+    is_distance boolean,
+    is_green boolean,
+    is_safe boolean,
+    is_traffic boolean)
  RETURNS numeric
  LANGUAGE plpgsql
 AS $function$
@@ -24,6 +25,7 @@ DECLARE
     worse_pm_param numeric := 1.0;
     traffic_param numeric := 1.0; 
     green_param numeric := 1.0;
+    user_param numeric := 1.0;
 BEGIN
 
     -- default algorithm
@@ -33,9 +35,22 @@ BEGIN
     	edge_weight := time_cost;
     END IF;
 
+    IF profile_type = 'pedestrian' THEN
+        IF road_type != 'footway' AND road_type != 'footpath' AND road_type != 'steps' AND road_type != 'crossing' THEN
+            user_param := 10.0;
+        END IF;
+    ELSIF profile_type = 'bike' OR profile_type = 'ebike' OR profile_type = 'scooter' THEN
+        IF road_type = 'cycleway' THEN
+            user_param := 0.5;
+        ELSEIF road_type = 'footway' OR road_type = 'footway' OR road_type = 'steps' THEN
+            user_param := 10.0;
+        END IF;
+    END IF;
+
     -- refract better this "safe_param" in a way to include diffrent type of profile
-    IF is_safe IS TRUE THEN
+    IF is_safe IS TRUE THEN -- QUESTA CONDIZIONE VA MODIFICATA IN BASE AL TIPO DI MEZZO 
         safe_param := CASE
+            /*
             WHEN road_type = 'pedestrian' THEN 0.7
             WHEN road_type = 'living_street' THEN 0.8
             WHEN road_type = 'footway' THEN 0.7
@@ -44,7 +59,11 @@ BEGIN
             WHEN road_type = 'steps' AND profile_type = 'pedestrian' THEN 0.7
             WHEN road_type = 'cycleway' AND profile_type = 'micromobility' THEN 0.7
             WHEN road_type = 'cycleway' THEN 0.8
-            ELSE 1.0
+            ELSE 1.0*/
+            WHEN maxspeed_forward <= 30.0 THEN 0.5
+            WHEN maxspeed_forward > 30 AND maxspeed_forward <= 50 THEN 0.7
+            WHEN maxspeed_forward > 50 AND maxspeed_forward <= 70 THEN 1.0
+            ELSE 10.0
         END;
     END IF;
 
@@ -80,7 +99,7 @@ BEGIN
     -- RAISE NOTICE 'slope source_elevation: %', source_elevation;
     -- RAISE NOTICE 'slope target_elevation: %', target_elevation;
 
-    edge_weight := (edge_weight / traffic_param) * safe_param * green_param * worse_pm_param;
+    edge_weight := ((edge_weight * user_param) / traffic_param) * safe_param * green_param * worse_pm_param;
 
     RAISE NOTICE 'edge_weight after: %', edge_weight;
 

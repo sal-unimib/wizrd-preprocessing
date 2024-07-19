@@ -13,7 +13,7 @@ POLLUTION_OVERLAY=blob.png
 MIN_AQI=1
 MAX_AQI=500
 
-TRAFFIC_OVERLAY=bicocca-traffic.png
+TRAFFIC_OVERLAY=bicocca-traffic2.png
 MIN_TRAFFIC=1
 MAX_TRAFFIC=4
 
