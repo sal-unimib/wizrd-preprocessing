@@ -137,6 +137,45 @@ query "DROP TABLE ways"
 query "ALTER TABLE temp RENAME TO ways"
 query "DROP TABLE overlays"
 
+
+echo "-----------------------------------------------------------------------------"
+echo " Removing unconnected components from the gloabl graph..."
+echo "-----------------------------------------------------------------------------"
+
+query "DELETE FROM ways WHERE highway IS NULL"
+query "CREATE TABLE connected_comps AS \
+	SELECT component, COUNT(node) as cont \
+	FROM pgr_connectedComponents( \
+		'SELECT * \
+		FROM ways') \
+	GROUP BY component \
+	ORDER BY cont DESC"
+query "CREATE TABLE tmp_ways AS \
+	SELECT * \
+	FROM pgr_connectedComponents( \
+		'SELECT * \
+		FROM ways') \
+	JOIN ways w ON w.source = node \
+	WHERE component = (SELECT component \
+	FROM connected_comps \
+	WHERE cont IN ( \
+		SELECT MAX(cont) \
+		FROM connected_comps));"
+query "ALTER TABLE tmp_ways \
+	DROP COLUMN seq, \
+	DROP COLUMN component, \
+	DROP COLUMN node"
+query "DROP TABLE ways"
+query "ALTER TABLE tmp_ways RENAME TO ways"
+query "CREATE TABLE ways_vertices_pgr_tmp AS \
+	SELECT * \
+	FROM ways_vertices_pgr \
+	WHERE id IN (SELECT source FROM ways) OR id IN (SELECT target FROM ways);"
+
+query "DROP TABLE ways_vertices_pgr;"
+
+query "ALTER TABLE ways_vertices_pgr_tmp RENAME TO ways_vertices_pgr;" 
+
 echo "-----------------------------------------------------------------------------"
 echo " All done!"
 echo "-----------------------------------------------------------------------------"
