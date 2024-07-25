@@ -8,6 +8,7 @@ CREATE OR REPLACE FUNCTION public.calculate_cost_advanced_new(
     traffic integer,
     maxspeed_forward double precision,
     green boolean,
+    surface text,
     is_air_quality boolean,
     is_distance boolean,
     is_green boolean,
@@ -26,7 +27,17 @@ DECLARE
     traffic_param numeric := 1.0; 
     green_param numeric := 1.0;
     user_param numeric := 1.0;
+    rough_surface boolean := FALSE;
+    pedestrian_road boolean := FALSE;
 BEGIN
+
+    IF surface IN ('ground', 'gravel', 'dirt', 'unpaved') THEN
+        rough_surface := TRUE;
+    END IF;
+
+    IF road_type IN ('footway', 'footpath', 'steps', 'crossing') THEN
+        pedestrian_road := TRUE;
+    END IF;
 
     -- default algorithm
     IF is_distance = TRUE THEN
@@ -35,16 +46,25 @@ BEGIN
     	edge_weight := time_cost;
     END IF;
 
-    IF profile_type = 'pedestrian' THEN
-        IF road_type != 'footway' AND road_type != 'footpath' AND road_type != 'steps' AND road_type != 'crossing' THEN
-            user_param := 10.0;
-        END IF;
-    ELSIF profile_type = 'bike' OR profile_type = 'ebike' OR profile_type = 'scooter' THEN
+    -- pedestrians should stick to footways
+    IF profile_type = 'pedestrian' AND pedestrian_road IS FALSE THEN
+        user_param := 10.0;
+    ELSE -- <=> profile_type IN ('bike', 'ebike', 'scooter')
+        -- bikes and co. should prefer cycling roads and avoid footways...
         IF road_type = 'cycleway' THEN
             user_param := 0.5;
-        ELSEIF road_type = 'footway' OR road_type = 'footway' OR road_type = 'steps' THEN
+        -- ...except for green areas, where bikes are (mostly) allowed...
+        ELSEIF road_type IN ('footway', 'footpath') AND green IS TRUE THEN
+            user_param := 1.0;
+        -- ..but bikes should always avoid steps
+        ELSEIF road_type = 'steps' THEN
             user_param := 10.0;
         END IF;
+    END IF;
+
+    -- e-scooters should not choose rough roads
+    IF (profile_type = 'scooter' AND rough_surface IS TRUE) THEN
+        user_param := 10.0;
     END IF;
 
     -- refract better this "safe_param" in a way to include diffrent type of profile
