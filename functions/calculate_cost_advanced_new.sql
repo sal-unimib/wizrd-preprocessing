@@ -47,19 +47,22 @@ BEGIN
     END IF;
 
     -- pedestrians should stick to footways
-    IF profile_type = 'pedestrian' AND pedestrian_road IS FALSE THEN
-        user_param := 10.0;
+    IF profile_type = 'pedestrian' THEN
+    	IF pedestrian_road IS FALSE THEN
+        	user_param := 10.0;
+        END IF;
     ELSE -- <=> profile_type IN ('bike', 'ebike', 'scooter')
-        -- bikes and co. should prefer cycling roads and avoid footways...
+        -- bikes and co. should avoid footways where possible...
+        IF pedestrian_road IS TRUE THEN
+            user_param := 5.0;
+        END IF;
+        -- ...and prefer cycling roads...
         IF road_type = 'cycleway' THEN
             user_param := 0.5;
         -- ...except for green areas, where bikes are (mostly) allowed...
         ELSEIF road_type IN ('footway', 'footpath') AND green IS TRUE THEN
             user_param := 1.0;
-        -- ..but bikes should always avoid steps
-        ELSEIF road_type = 'steps' THEN
-            user_param := 10.0;
-        END IF;
+        END IF;   
     END IF;
 
     -- e-scooters should not choose rough roads
