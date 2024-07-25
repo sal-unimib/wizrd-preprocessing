@@ -137,6 +137,7 @@ query "DROP TABLE ways"
 query "ALTER TABLE temp RENAME TO ways"
 query "DROP TABLE overlays"
 
+# -----------------------------------------------------------------------------
 
 echo "-----------------------------------------------------------------------------"
 echo " Removing unconnected components from the gloabl graph..."
@@ -174,7 +175,18 @@ query "CREATE TABLE ways_vertices_pgr_tmp AS \
 
 query "DROP TABLE ways_vertices_pgr;"
 
-query "ALTER TABLE ways_vertices_pgr_tmp RENAME TO ways_vertices_pgr;" 
+query "ALTER TABLE ways_vertices_pgr_tmp RENAME TO ways_vertices_pgr;"
+
+echo "-----------------------------------------------------------------------------"
+echo " Changing values in 'one_way' and removing leftovers"
+echo "-----------------------------------------------------------------------------"
+
+query "UPDATE ways SET one_way = -1 WHERE one_way = 1"
+query "UPDATE ways SET one_way = +1 WHERE one_way = 0 OR one_way = 2"
+query "ALTER TABLE ways DROP COLUMN oneway"
+query "DROP TABLE green_areas"
+query "DROP TABLE connected_comps"
+query "DROP TABLE IF EXISTS pointsofinterest"
 
 echo "-----------------------------------------------------------------------------"
 echo " All done!"
