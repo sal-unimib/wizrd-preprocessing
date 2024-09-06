@@ -11,13 +11,13 @@ GREEN_AREA_TAG_ID_BELOW=3000
 
 POLLUTION_OVERLAY=blob.png
 POLLUTION_OVERLAY_LOW=blob.png
-POLLUTION_OVERLAY_MEDIUM=blob.png
-POLLUTION_OVERLAY_HIGH=blob.png
+POLLUTION_OVERLAY_MEDIUM=blob2.png
+POLLUTION_OVERLAY_HIGH=blob3.png
 MIN_AQI=1
 MAX_AQI=500
 
 TRAFFIC_OVERLAY=bicocca-traffic.png
-TRAFFIC_OVERLAY_LOW=bicocca-traffic2.png
+TRAFFIC_OVERLAY_LOW=bicocca-traffic.png
 TRAFFIC_OVERLAY_MEDIUM=bicocca-traffic2.png
 TRAFFIC_OVERLAY_HIGH=bicocca-traffic2.png
 MIN_TRAFFIC=1
@@ -117,10 +117,10 @@ mkdir -p .cache
 query "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
 
 echo "Processing air pollution overlay..."
-overlay/./overlay overlay/$POLLUTION_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution.csv
-overlay/./overlay overlay/$POLLUTION_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_low.csv
-overlay/./overlay overlay/$POLLUTION_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_medium.csv
-overlay/./overlay overlay/$POLLUTION_OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_high.csv
+overlay/./overlay overlay/$POLLUTION_OVERLAY 				$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution.csv
+overlay/./overlay overlay/$POLLUTION_OVERLAY_LOW 		$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_low.csv
+overlay/./overlay overlay/$POLLUTION_OVERLAY_MEDIUM $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_medium.csv
+overlay/./overlay overlay/$POLLUTION_OVERLAY_HIGH 	$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_high.csv
 panic $? "overlay: failed to create air pollution data"
 
 echo "Processing traffic overlay..."
@@ -138,7 +138,7 @@ query "CREATE TABLE overlays (id BIGINT PRIMARY KEY, pm2 INTEGER, id2 BIGINT, pm
 	id5 BIGINT, traffic INTEGER, id6 BIGINT, traffic_low INTEGER, id7 BIGINT, traffic_medium INTEGER, id8 BIGINT, traffic_high INTEGER)"
 query "\copy overlays FROM .cache/overlays.csv WITH CSV DELIMITER ','"
 
-rm -r .cache
+#rm -r .cache
 
 # -----------------------------------------------------------------------------
 
