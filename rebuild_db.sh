@@ -10,9 +10,9 @@ CONFIG_FILE=mapconfig.xml
 GREEN_AREA_TAG_ID_BELOW=3000
 
 POLLUTION_OVERLAY=blob.png
-POLLUTION_OVERLAY_LOW=blob.png
-POLLUTION_OVERLAY_MEDIUM=blob2.png
-POLLUTION_OVERLAY_HIGH=blob3.png
+POLLUTION_OVERLAY_LOW=pollution_low.png
+POLLUTION_OVERLAY_MEDIUM=pollution_medium.png
+POLLUTION_OVERLAY_HIGH=pollution_high.png
 MIN_AQI=1
 MAX_AQI=500
 
@@ -117,16 +117,16 @@ mkdir -p .cache
 query "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
 
 echo "Processing air pollution overlay..."
-overlay/./overlay overlay/$POLLUTION_OVERLAY 				$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution.csv
-overlay/./overlay overlay/$POLLUTION_OVERLAY_LOW 		$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_low.csv
+overlay/./overlay overlay/$POLLUTION_OVERLAY 		$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution.csv
+overlay/./overlay overlay/$POLLUTION_OVERLAY_LOW    $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_low.csv
 overlay/./overlay overlay/$POLLUTION_OVERLAY_MEDIUM $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_medium.csv
 overlay/./overlay overlay/$POLLUTION_OVERLAY_HIGH 	$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_high.csv
 panic $? "overlay: failed to create air pollution data"
 
 echo "Processing traffic overlay..."
-overlay/./overlay overlay/$TRAFFIC_OVERLAY 				$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic.csv
+overlay/./overlay overlay/$TRAFFIC_OVERLAY 			$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic.csv
 overlay/./overlay overlay/$TRAFFIC_OVERLAY_LOW 		$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic_low.csv
-overlay/./overlay overlay/$TRAFFIC_OVERLAY_MEDIUM $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic_medium.csv
+overlay/./overlay overlay/$TRAFFIC_OVERLAY_MEDIUM 	$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic_medium.csv
 overlay/./overlay overlay/$TRAFFIC_OVERLAY_HIGH 	$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic_high.csv
 panic $? "overlay: failed to create traffic data"
 
@@ -191,6 +191,8 @@ query "CREATE TABLE ways_vertices_pgr_tmp AS \
 query "DROP TABLE ways_vertices_pgr;"
 
 query "ALTER TABLE ways_vertices_pgr_tmp RENAME TO ways_vertices_pgr;"
+
+# -----------------------------------------------------------------------------
 
 echo "-----------------------------------------------------------------------------"
 echo " Changing values in 'one_way' and removing leftovers"
