@@ -67,8 +67,7 @@ osm2pgrouting/build/./osm2pgrouting \
     -W $PGSQL_PASS \
     -h $PGSQL_SERVER_ADDR \
     --tags \
-    --attributes \
-    --addnodes
+    --attributes
 panic $? "osm2pgrouting: failed to populate DB"
 
 echo "Renaming columns..."
