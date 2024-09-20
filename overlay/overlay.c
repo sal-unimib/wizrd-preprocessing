@@ -188,13 +188,17 @@ int main(int argc, char* argv[]) {
 
     // iterate on stdin (csv)
     // assume we're operating on ways (id,start,end)
+    // additional columns will be left intact
     while ((nread = getline(&line, &len, stdin)) != -1) {
+        char extra[1024] = {0};
+
         // use canary so integer division by 2 won't risk rounding to zero
         int start_gray = -42, end_gray = -42, mean_gray;
 
-        // input format: id,x1,y1,x2,y2
-        sscanf(line, "%d,%f,%f,%f,%f", &id, &(start.lon), &(start.lat),
-               &(end.lon), &(end.lat));
+        // input format: id,x1,y1,x2,y2,extra
+        sscanf(line, "%d,%f,%f,%f,%f%s", &id, &(start.lon), &(start.lat),
+               &(end.lon), &(end.lat), &extra[0]);
+        TRACE("extra data: %s\n", extra);
 
         // get grayscale value at starting point
         if (!is_inside(bbox, start)) {
@@ -226,7 +230,8 @@ int main(int argc, char* argv[]) {
         if (mean_gray < 0) mean_gray = 0;
 
         // output format: id,value
-        printf("%d,%d\n", id,
+        printf("%d,%f,%f,%f,%f%s,%d\n", id, start.lon, start.lat, end.lon,
+               end.lat, extra,
                limit_low +
                    (int)round((limit_high - limit_low) * mean_gray / 255.f));
         stats_rows++;

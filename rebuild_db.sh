@@ -26,19 +26,30 @@ MAX_TRAFFIC=4
 source globals.sh
 
 query() {
-    QUERY=$1
+	QUERY=$1
 
-    psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "$QUERY"
-    panic $? "psql: failed to execute query: \"$QUERY\""
+	psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -c "$QUERY"
+	panic $? "psql: failed to execute query: \"$QUERY\""
+}
+
+add_overlay() {
+	OVERLAY=$1
+	MIN=$2
+	MAX=$3
+	IN=$4
+	OUT=$5
+
+	overlay/./overlay overlay/$OVERLAY $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN $MAX <$IN >$OUT
+	panic $? "overlay: failed to create traffic data"
 }
 
 hash psql 2>/dev/null
 panic $? "PostgreSQL is required to run this script"
 
-osm2pgrouting/build/./osm2pgrouting > /dev/null
+osm2pgrouting/build/./osm2pgrouting >/dev/null
 panic $? "You must patch and build osm2pgrouting before running this script"
 
-overlay/./overlay > /dev/null
+overlay/./overlay >/dev/null
 panic $? "You must build the overlay tool before running this script"
 
 export PGPASSWORD=$PGSQL_PASS
@@ -60,14 +71,14 @@ echo " Importing data from OSM dump file..."
 echo "-----------------------------------------------------------------------------"
 
 osm2pgrouting/build/./osm2pgrouting \
-    -f $MAP_FILE \
-    -c $CONFIG_FILE \
-    --dbname $PGSQL_DB_NAME \
-    -U $PGSQL_USER \
-    -W $PGSQL_PASS \
-    -h $PGSQL_SERVER_ADDR \
-    --tags \
-    --attributes
+	-f $MAP_FILE \
+	-c $CONFIG_FILE \
+	--dbname $PGSQL_DB_NAME \
+	-U $PGSQL_USER \
+	-W $PGSQL_PASS \
+	-h $PGSQL_SERVER_ADDR \
+	--tags \
+	--attributes
 panic $? "osm2pgrouting: failed to populate DB"
 
 echo "Renaming columns..."
@@ -85,10 +96,10 @@ query "CREATE EXTENSION pgRouting CASCADE"
 COUNT=0
 
 for FUNC in functions/*.sql; do
-  echo Processing $FUNC...
-  psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -f $FUNC
-  panic $? "psql: failed to add function to DB"
-  ((COUNT=COUNT+1))
+	echo Processing $FUNC...
+	psql -U $PGSQL_USER -h $PGSQL_SERVER_ADDR -d $PGSQL_DB_NAME -f $FUNC
+	panic $? "psql: failed to add function to DB"
+	((COUNT = COUNT + 1))
 done
 
 echo Imported $COUNT functions.
@@ -115,34 +126,34 @@ mkdir -p .cache
 
 query "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
 
-echo "Processing air pollution overlay..."
-overlay/./overlay overlay/$POLLUTION_OVERLAY 		$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution.csv
-overlay/./overlay overlay/$POLLUTION_OVERLAY_LOW    $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_low.csv
-overlay/./overlay overlay/$POLLUTION_OVERLAY_MEDIUM $BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_medium.csv
-overlay/./overlay overlay/$POLLUTION_OVERLAY_HIGH 	$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_AQI $MAX_AQI < .cache/ways.csv > .cache/pollution_high.csv
-panic $? "overlay: failed to create air pollution data"
+echo "Processing air pollution overlays..."
+add_overlay $POLLUTION_OVERLAY $MIN_AQI $MAX_AQI .cache/ways.csv .cache/work1.csv
+add_overlay $POLLUTION_OVERLAY_LOW $MIN_AQI $MAX_AQI .cache/work1.csv .cache/work2.csv
+add_overlay $POLLUTION_OVERLAY_MEDIUM $MIN_AQI $MAX_AQI .cache/work2.csv .cache/work1.csv
+add_overlay $POLLUTION_OVERLAY_HIGH $MIN_AQI $MAX_AQI .cache/work1.csv .cache/pollution.csv
 
-echo "Processing traffic overlay..."
-overlay/./overlay overlay/$TRAFFIC_OVERLAY 			$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic.csv
-overlay/./overlay overlay/$TRAFFIC_OVERLAY_LOW 		$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic_low.csv
-overlay/./overlay overlay/$TRAFFIC_OVERLAY_MEDIUM 	$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic_medium.csv
-overlay/./overlay overlay/$TRAFFIC_OVERLAY_HIGH 	$BB_SW_LON $BB_SW_LAT $BB_NE_LON $BB_NE_LAT $MIN_TRAFFIC $MAX_TRAFFIC < .cache/ways.csv > .cache/traffic_high.csv
-panic $? "overlay: failed to create traffic data"
+echo "Processing traffic overlays..."
+add_overlay $TRAFFIC_OVERLAY $MIN_TRAFFIC $MAX_TRAFFIC .cache/pollution.csv .cache/work1.csv
+add_overlay $TRAFFIC_OVERLAY_LOW $MIN_TRAFFIC $MAX_TRAFFIC .cache/work1.csv .cache/work2.csv
+add_overlay $TRAFFIC_OVERLAY_MEDIUM $MIN_TRAFFIC $MAX_TRAFFIC .cache/work2.csv .cache/work1.csv
+add_overlay $TRAFFIC_OVERLAY_HIGH $MIN_TRAFFIC $MAX_TRAFFIC .cache/work1.csv .cache/overlays.csv
 
-echo "Creating overlays table"
-paste -d , .cache/pollution.csv .cache/pollution_low.csv .cache/pollution_medium.csv .cache/pollution_high.csv \
-	.cache/traffic.csv .cache/traffic_low.csv .cache/traffic_medium.csv .cache/traffic_high.csv > .cache/overlays.csv
-panic $? "paste: failed to merge overlays"
-query "CREATE TABLE overlays (id BIGINT PRIMARY KEY, pm2 INTEGER, id2 BIGINT, pm2_low INTEGER, id3 BIGINT, pm2_medium INTEGER, id4 BIGINT, pm2_high INTEGER,\
-	id5 BIGINT, traffic INTEGER, id6 BIGINT, traffic_low INTEGER, id7 BIGINT, traffic_medium INTEGER, id8 BIGINT, traffic_high INTEGER)"
+echo "Creating overlay table"
+query "CREATE TABLE overlays (id BIGINT PRIMARY KEY,					\
+							  x1 DOUBLE PRECISION, y1 DOUBLE PRECISION,	\
+							  x2 DOUBLE PRECISION, y2 DOUBLE PRECISION,	\
+							  pm2 INTEGER, pm2_low INTEGER, 			\
+							  pm2_medium INTEGER, pm2_high INTEGER,		\
+							  traffic INTEGER, traffic_low INTEGER,     \
+							  traffic_medium INTEGER, traffic_high INTEGER)"
 query "\copy overlays FROM .cache/overlays.csv WITH CSV DELIMITER ','"
 
-#rm -r .cache
+rm -r .cache
 
 # -----------------------------------------------------------------------------
 
 echo "-----------------------------------------------------------------------------"
-echo " Merging external data..."
+echo " Merging overlay data..."
 echo "-----------------------------------------------------------------------------"
 
 query "SELECT w.*, o.pm2, o.pm2_low, o.pm2_medium, o.pm2_high, o.traffic, o.traffic_low, o.traffic_medium, o.traffic_high \
@@ -207,4 +218,3 @@ query "DROP TABLE IF EXISTS pointsofinterest"
 echo "-----------------------------------------------------------------------------"
 echo " All done!"
 echo "-----------------------------------------------------------------------------"
-
