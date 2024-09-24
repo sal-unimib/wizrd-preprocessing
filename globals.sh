@@ -7,7 +7,7 @@
 MAP_FILE=bicocca.osm
 
 # Network parameters for connecting to the DB
-PGSQL_SERVER_ADDR=172.18.0.2
+PGSQL_SERVER_ADDR=mapserver-db
 # PGSQL_SERVER_PORT=
 
 # Connection parameters for the DB
