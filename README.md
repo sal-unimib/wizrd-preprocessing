@@ -9,7 +9,7 @@ The root of the project contains a number of files which are directly responsibl
 - `functions/` - Contains functions used in the database.
 - `osm2pgrouting/` - Git submodule containing the source code for osm2pgrouting. Remember to clone with `git clone --recurse-submodules` or pull with `git pull --recurse-submodules` at least once (hint: `-f` can be used when pulling if the submodule somehow breaks).
 - `overlay/` - Contains the sources for and other files related to the overlay tool used to simulate traffic and air pollution data.
-- `pathc/` - Contains patches for osm2pgrouting that enable exporting custom columns.
+- `patch/` - Contains patches for osm2pgrouting that enable exporting custom columns.
 
 ### Scripts
 
@@ -25,12 +25,37 @@ The root of the project contains a number of files which are directly responsibl
 
 ## Workflow
 
+### Automated Process (Docker)
+
+> If you're using Podman, either `/s/docker/podman/` or `alias docker=podman`
+
+To rebuild the container image you should do the following:
+
+```console
+$ rm -rf osm2pgrouting/
+$ mkdir -p osm2pgrouting 
+$ git pull --recurse-submodules 
+$ docker build -t mapserver-rebuilder .
+```
+
+...which can be condensed into the following one-liner:
+
+`rm -rf osm2pgrouting/; mkdir -p osm2pgrouting; git pull --recurse-submodules; docker build -t mapserver-rebuilder .`
+
+The image only needs to be rebuilt if you change an overlay image or the bounding box, or when you change the variables in `globals.sh` (or any other script for that matter). Once you've rebuilt the image, you can run the container as follows:
+
+`docker run --name=mapserver-rebuilder --network=musa-network mapserver-rebuilder`
+
+This will have the same effect as running `./rebuild_db.sh`, but will not require you to forward the DB's port to the host.
+
+### Manual Process
+
 > ***CAVEAT***\
 > You most likely need to change some of the variables defined in `globals.sh` (the database's IP address at the very least).
 
 1. Clone this repository locally with `git clone --recurse-submodules` and make sure that the `osm2pgrouting/` folder is populated.
 2. Patch osm2pgrouting by running `./patch_osm2pgr.sh` then build it. Refer to the osm2pgrouting README file for dependencies etc. You can build osm2pgr as follows:
-   ```
+   ```shell
    pushd osm2pgrouting
    cmake -H. -Bbuild
    cd build
@@ -38,7 +63,7 @@ The root of the project contains a number of files which are directly responsibl
    popd
    ```
 3. Build the overlay tool as follows:
-   ```
+   ```shell
    pushd overlay
    make
    popd
@@ -76,6 +101,8 @@ Computes the cost of a route given some parameters; this function is the core of
 <!-- TODO Some more info? -->
 
 ##### `calculate_heuristic_estimate.sql` - Function
+
+> This is currently unused
 
 Used by A* routing to provide an estimate cost for route optimization.
 
