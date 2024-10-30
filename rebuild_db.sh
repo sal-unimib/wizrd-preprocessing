@@ -78,7 +78,8 @@ osm2pgrouting/build/./osm2pgrouting \
 	-W $PGSQL_PASS \
 	-h $PGSQL_SERVER_ADDR \
 	--tags \
-	--attributes
+	--attributes \
+	--addnodes
 panic $? "osm2pgrouting: failed to populate DB"
 
 echo "Renaming columns..."
@@ -107,11 +108,18 @@ echo Imported $COUNT functions.
 # -----------------------------------------------------------------------------
 
 echo "-----------------------------------------------------------------------------"
+echo " Relabeling Crossings..."
+echo "-----------------------------------------------------------------------------"
+
+query "CALL relabel_crossings()"
+
+# -----------------------------------------------------------------------------
+
+echo "-----------------------------------------------------------------------------"
 echo " Creating Green Areas and Ways..."
 echo "-----------------------------------------------------------------------------"
 
 query "CALL make_green_areas($GREEN_AREA_TAG_ID_BELOW)"
-panic $? "psql: failed to create Green Areas"
 query " \
   ALTER TABLE ways ADD COLUMN IF NOT EXISTS green boolean DEFAULT false; \
   UPDATE ways w SET green = true FROM green_areas ga WHERE (ST_Contains(ga.geom, w.the_geom) OR ST_Crosses(ga.geom, w.the_geom)) AND w.highway IS NOT NULL"
