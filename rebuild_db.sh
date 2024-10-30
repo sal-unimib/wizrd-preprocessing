@@ -215,6 +215,20 @@ query "DROP TABLE green_areas"
 query "DROP TABLE connected_comps"
 query "DROP TABLE IF EXISTS pointsofinterest"
 
+# -----------------------------------------------------------------------------
+
+echo "-----------------------------------------------------------------------------"
+echo " Creating POIs table"
+echo "-----------------------------------------------------------------------------"
+
+query "CREATE TABLE pois (id BIGINT PRIMARY KEY, \
+	type TEXT, \
+	lon DOUBLE PRECISION, \
+	lat DOUBLE PRECISION, \
+	name TEXT, description TEXT, \
+	bikes INTEGER, scooters INTEGER, ebikes INTEGER)"
+query "\copy pois FROM poi/data.csv WITH CSV DELIMITER ','"
+
 echo "-----------------------------------------------------------------------------"
 echo " All done!"
 echo "-----------------------------------------------------------------------------"
