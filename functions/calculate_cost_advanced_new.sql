@@ -93,7 +93,12 @@ BEGIN
         traffic_param := 1.0 - ROUND(traffic / 4.0, 2);
         IF traffic_param < 0.01 THEN traffic_param := 0.01; END IF;
     END IF;
-    
+
+    -- Avoid accidents
+    IF pedestrian_road IS FALSE AND traffic > 4 THEN
+        RETURN 999.99; -- REALLY avoid accidents
+    END IF;
+
     -- Handle air pollution param
     IF is_air_quality IS TRUE THEN
         pm2_param := ROUND(pm2 / 500.0, 2);
