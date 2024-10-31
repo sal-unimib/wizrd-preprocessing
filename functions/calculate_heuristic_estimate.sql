@@ -1,6 +1,13 @@
-CREATE OR REPLACE FUNCTION public.calculate_heuristic_estimate(target_vertex integer, current_vertex integer)
- RETURNS double precision
- LANGUAGE plpgsql
+-- make_green_areas.sql
+-- Identifies which paths lie inside green areas and labels them accordingly
+-- Copyright (c) 2024 The MUSA micromobility project contributors
+-- This file is part of the MUSA micromobility project
+
+CREATE OR REPLACE FUNCTION public.calculate_heuristic_estimate(
+    target_vertex integer, current_vertex integer
+)
+RETURNS double precision
+LANGUAGE plpgsql
 AS $function$
 DECLARE
     target_point geometry;
@@ -17,4 +24,3 @@ BEGIN
     RETURN heuristic_estimate;
 END;
 $function$
-
