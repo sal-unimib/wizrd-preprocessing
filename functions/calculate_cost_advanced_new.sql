@@ -67,6 +67,9 @@ BEGIN
         -- ...and prefer cycling roads...
         IF road_type = 'cycleway' THEN
             user_param := 0.5;
+        -- [jm] add an affinity for crossings to avoid weird situations
+        ELSEIF road_type = 'crossing' THEN
+            user_param := 0.9;
         -- ...except for green areas, where bikes are (mostly) allowed...
         ELSEIF road_type IN ('footway', 'footpath') AND green IS TRUE THEN
             user_param := 1.0;
@@ -132,4 +135,3 @@ BEGIN
     RETURN edge_weight;
 END;
 $function$
-
