@@ -9,19 +9,17 @@ CONFIG_FILE=mapconfig.xml
 
 GREEN_AREA_TAG_ID_BELOW=3000
 
-POLLUTION_OVERLAY=blob.png
 POLLUTION_OVERLAY_LOW=pollution_low.png
 POLLUTION_OVERLAY_MEDIUM=pollution_medium.png
 POLLUTION_OVERLAY_HIGH=pollution_high.png
 MIN_AQI=1
 MAX_AQI=500
 
-TRAFFIC_OVERLAY=bicocca-traffic.png
-TRAFFIC_OVERLAY_LOW=bicocca-traffic.png
-TRAFFIC_OVERLAY_MEDIUM=bicocca-traffic2.png
-TRAFFIC_OVERLAY_HIGH=bicocca-traffic2.png
+TRAFFIC_OVERLAY_LOW=bicocca-traffic-low.png
+TRAFFIC_OVERLAY_MEDIUM=bicocca-traffic.png
+TRAFFIC_OVERLAY_HIGH=bicocca-accident.png
 MIN_TRAFFIC=1
-MAX_TRAFFIC=4
+MAX_TRAFFIC=5
 
 source globals.sh
 
@@ -135,24 +133,22 @@ mkdir -p .cache
 query "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
 
 echo "Processing air pollution overlays..."
-add_overlay $POLLUTION_OVERLAY $MIN_AQI $MAX_AQI .cache/ways.csv .cache/work1.csv
-add_overlay $POLLUTION_OVERLAY_LOW $MIN_AQI $MAX_AQI .cache/work1.csv .cache/work2.csv
-add_overlay $POLLUTION_OVERLAY_MEDIUM $MIN_AQI $MAX_AQI .cache/work2.csv .cache/work1.csv
-add_overlay $POLLUTION_OVERLAY_HIGH $MIN_AQI $MAX_AQI .cache/work1.csv .cache/pollution.csv
+add_overlay $POLLUTION_OVERLAY_LOW $MIN_AQI $MAX_AQI .cache/ways.csv .cache/work1.csv
+add_overlay $POLLUTION_OVERLAY_MEDIUM $MIN_AQI $MAX_AQI .cache/work1.csv .cache/work2.csv
+add_overlay $POLLUTION_OVERLAY_HIGH $MIN_AQI $MAX_AQI .cache/work2.csv .cache/pollution.csv
 
 echo "Processing traffic overlays..."
-add_overlay $TRAFFIC_OVERLAY $MIN_TRAFFIC $MAX_TRAFFIC .cache/pollution.csv .cache/work1.csv
-add_overlay $TRAFFIC_OVERLAY_LOW $MIN_TRAFFIC $MAX_TRAFFIC .cache/work1.csv .cache/work2.csv
-add_overlay $TRAFFIC_OVERLAY_MEDIUM $MIN_TRAFFIC $MAX_TRAFFIC .cache/work2.csv .cache/work1.csv
-add_overlay $TRAFFIC_OVERLAY_HIGH $MIN_TRAFFIC $MAX_TRAFFIC .cache/work1.csv .cache/overlays.csv
+add_overlay $TRAFFIC_OVERLAY_LOW $MIN_TRAFFIC $MAX_TRAFFIC .cache/pollution.csv .cache/work1.csv
+add_overlay $TRAFFIC_OVERLAY_MEDIUM $MIN_TRAFFIC $MAX_TRAFFIC .cache/work1.csv .cache/work2.csv
+add_overlay $TRAFFIC_OVERLAY_HIGH $MIN_TRAFFIC $MAX_TRAFFIC .cache/work2.csv .cache/overlays.csv
 
 echo "Creating overlay table"
 query "CREATE TABLE overlays (id BIGINT PRIMARY KEY,					\
 							  x1 DOUBLE PRECISION, y1 DOUBLE PRECISION,	\
 							  x2 DOUBLE PRECISION, y2 DOUBLE PRECISION,	\
-							  pm2 INTEGER, pm2_low INTEGER, 			\
+							  pm2_low INTEGER, 			\
 							  pm2_medium INTEGER, pm2_high INTEGER,		\
-							  traffic INTEGER, traffic_low INTEGER,     \
+							  traffic_low INTEGER,     \
 							  traffic_medium INTEGER, traffic_high INTEGER)"
 query "\copy overlays FROM .cache/overlays.csv WITH CSV DELIMITER ','"
 
@@ -164,7 +160,7 @@ echo "--------------------------------------------------------------------------
 echo " Merging overlay data..."
 echo "-----------------------------------------------------------------------------"
 
-query "SELECT w.*, o.pm2, o.pm2_low, o.pm2_medium, o.pm2_high, o.traffic, o.traffic_low, o.traffic_medium, o.traffic_high \
+query "SELECT w.*, o.pm2_low, o.pm2_medium, o.pm2_high, o.traffic_low, o.traffic_medium, o.traffic_high \
  INTO temp FROM ways w JOIN overlays o ON o.id = w.id"
 query "DROP TABLE ways"
 query "ALTER TABLE temp RENAME TO ways"
