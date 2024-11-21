@@ -222,7 +222,7 @@ query "DROP TABLE IF EXISTS pointsofinterest"
 # -----------------------------------------------------------------------------
 
 echo "-----------------------------------------------------------------------------"
-echo " Creating POIs table"
+echo " Creating data tables"
 echo "-----------------------------------------------------------------------------"
 
 query "CREATE TABLE pois (id BIGINT PRIMARY KEY, \
@@ -231,7 +231,7 @@ query "CREATE TABLE pois (id BIGINT PRIMARY KEY, \
 	lat DOUBLE PRECISION, \
 	name TEXT, description TEXT, \
 	bikes INTEGER, scooters INTEGER, ebikes INTEGER)"
-query "\copy pois FROM poi/data.csv WITH CSV DELIMITER ','"
+query "\copy pois FROM data/pois.csv WITH CSV DELIMITER ','"
 
 echo "-----------------------------------------------------------------------------"
 echo " All done!"
