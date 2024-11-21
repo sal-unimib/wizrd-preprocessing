@@ -57,7 +57,13 @@ BEGIN
     -- pedestrians should stick to footways
     IF profile_type = 'pedestrian' THEN
     	IF pedestrian_road IS FALSE THEN
-        	user_param := 10.0;
+            -- but service and residential roads often don't have
+            -- marked footways and can be (quite) safely used by peds
+            IF road_type IN ('residential', 'service') THEN
+                user_param := 1.1;
+        	ELSE
+                user_param := 5.0;
+            END IF;
         END IF;
     ELSE -- <=> profile_type IN ('bike', 'ebike', 'scooter')
         -- bikes and co. should avoid footways where possible...
