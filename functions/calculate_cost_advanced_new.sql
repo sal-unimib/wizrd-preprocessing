@@ -19,7 +19,8 @@ CREATE OR REPLACE FUNCTION public.calculate_cost_advanced_new(
     is_distance boolean,
     is_green boolean,
     is_safe boolean,
-    is_traffic boolean
+    is_traffic boolean,
+    is_reduced_mobility boolean
 )
 RETURNS numeric
 LANGUAGE plpgsql
@@ -47,11 +48,10 @@ BEGIN
         pedestrian_road := TRUE;
     END IF;
 
-    -- default algorithm
-    IF is_distance = TRUE THEN
-        edge_weight := edge_distance;
-    ELSE
-    	edge_weight := time_cost;
+    IF is_reduced_mobility THEN
+        IF rough_surface OR road_type = 'steps' THEN
+            RETURN 999.99; -- Reduced mobility users cannot use these
+        END IF;
     END IF;
 
     -- pedestrians should stick to footways
