@@ -1,5 +1,5 @@
--- make_green_areas.sql
--- Identifies which paths lie inside green areas and labels them accordingly
+-- calculate_cost_advanced_new.sql
+-- Computes a way's cost according to several parameters
 -- Copyright (c) 2024 Jacopo Maltagliati (j.maltagliati@campus.unimib.it)
 -- Copyright (c) 2024 Matteo Vaghi
 -- Copyright (c) 2024 The MUSA micromobility project contributors
