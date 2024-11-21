@@ -233,6 +233,12 @@ query "CREATE TABLE pois (id BIGINT PRIMARY KEY, \
 	bikes INTEGER, scooters INTEGER, ebikes INTEGER)"
 query "\copy pois FROM data/pois.csv WITH CSV DELIMITER ','"
 
+query "CREATE TABLE profiles (name TEXT PRIMARY KEY, \
+	speed DOUBLE PRECISION, \
+	cost DOUBLE PRECISION, \
+	green INTEGER)"
+query "\copy profiles FROM data/profiles.csv WITH CSV DELIMITER ','"
+
 echo "-----------------------------------------------------------------------------"
 echo " All done!"
 echo "-----------------------------------------------------------------------------"
