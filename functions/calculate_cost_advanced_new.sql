@@ -84,7 +84,7 @@ BEGIN
 
     -- e-scooters should not choose rough roads
     IF (profile_type = 'scooter' AND rough_surface IS TRUE) THEN
-        user_param := 10.0;
+        user_param := 5.0;
     END IF;
 
     -- safe_param -> avoid high-speed roads
@@ -93,7 +93,7 @@ BEGIN
             WHEN maxspeed_forward <= 30.0 THEN 0.5
             WHEN maxspeed_forward > 30 AND maxspeed_forward <= 50 THEN 0.7
             WHEN maxspeed_forward > 50 AND maxspeed_forward <= 70 THEN 1.0
-            ELSE 10.0
+            ELSE 5.0
         END;
     END IF;
 
