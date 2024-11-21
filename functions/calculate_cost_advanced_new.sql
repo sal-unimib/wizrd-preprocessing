@@ -43,7 +43,7 @@ BEGIN
         rough_surface := TRUE;
     END IF;
 
-    IF road_type IN ('footway', 'footpath', 'steps', 'crossing') THEN
+    IF road_type IN ('footway', 'footpath', 'pedestrian', 'steps', 'crossing') THEN
         pedestrian_road := TRUE;
     END IF;
 
