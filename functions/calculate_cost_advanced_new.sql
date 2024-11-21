@@ -26,14 +26,14 @@ LANGUAGE plpgsql
 AS $function$
 DECLARE
     -- Local variables
-    edge_weight numeric;
-    safe_param numeric := 1.0;
-    pm2_param numeric := 1.0;
-    pm10_param numeric := 1.0;
-    worse_pm_param numeric := 1.0;
-    traffic_param numeric := 1.0;
-    green_param numeric := 1.0;
-    user_param numeric := 1.0;
+    edge_weight double precision := 0;
+    safe_param double precision := 1.0;
+    pm2_param double precision := 1.0;
+    pm10_param double precision := 1.0;
+    worse_pm_param double precision := 1.0;
+    traffic_param double precision := 1.0;
+    green_param double precision := 1.0;
+    user_param double precision := 1.0;
     rough_surface boolean := FALSE;
     pedestrian_road boolean := FALSE;
     
@@ -127,14 +127,21 @@ BEGIN
 
     /*
     RAISE NOTICE 'user_param: %', user_param;
-    RAISE NOTICE 'edge_weight before: %', edge_weight;
+    RAISE NOTICE 'edge_distance: %', edge_distance;
     RAISE NOTICE 'traffic_param: %', traffic_param;
     RAISE NOTICE 'safe_param: %', safe_param;
     RAISE NOTICE 'green_param: %', green_param;
     RAISE NOTICE 'worse_pm_param: %', worse_pm_param;
     */
 
-    edge_weight := ((edge_weight * user_param) / traffic_param) * safe_param * green_param * worse_pm_param;
+    traffic_param := 1 / traffic_param; 
+
+    edge_weight := edge_distance * 
+        user_param * 
+        safe_param * 
+        green_param * 
+        traffic_param *
+        worse_pm_param;
 
     -- RAISE NOTICE 'edge_weight after: %', edge_weight;
 
