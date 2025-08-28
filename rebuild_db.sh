@@ -125,51 +125,7 @@ query " \
 # -----------------------------------------------------------------------------
 
 echo "-----------------------------------------------------------------------------"
-echo " Importing external data..."
-echo "-----------------------------------------------------------------------------"
-
-mkdir -p .cache
-
-query "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
-
-echo "Processing air pollution overlays..."
-add_overlay $POLLUTION_OVERLAY_LOW $MIN_AQI $MAX_AQI .cache/ways.csv .cache/work1.csv
-add_overlay $POLLUTION_OVERLAY_MEDIUM $MIN_AQI $MAX_AQI .cache/work1.csv .cache/work2.csv
-add_overlay $POLLUTION_OVERLAY_HIGH $MIN_AQI $MAX_AQI .cache/work2.csv .cache/pollution.csv
-
-echo "Processing traffic overlays..."
-add_overlay $TRAFFIC_OVERLAY_LOW $MIN_TRAFFIC $MAX_TRAFFIC .cache/pollution.csv .cache/work1.csv
-add_overlay $TRAFFIC_OVERLAY_MEDIUM $MIN_TRAFFIC $MAX_TRAFFIC .cache/work1.csv .cache/work2.csv
-add_overlay $TRAFFIC_OVERLAY_HIGH $MIN_TRAFFIC $MAX_TRAFFIC .cache/work2.csv .cache/overlays.csv
-
-echo "Creating overlay table"
-query "CREATE TABLE overlays (id BIGINT PRIMARY KEY,					\
-							  x1 DOUBLE PRECISION, y1 DOUBLE PRECISION,	\
-							  x2 DOUBLE PRECISION, y2 DOUBLE PRECISION,	\
-							  pm2_low INTEGER, 			\
-							  pm2_medium INTEGER, pm2_high INTEGER,		\
-							  traffic_low INTEGER,     \
-							  traffic_medium INTEGER, traffic_high INTEGER)"
-query "\copy overlays FROM .cache/overlays.csv WITH CSV DELIMITER ','"
-
-rm -r .cache
-
-# -----------------------------------------------------------------------------
-
-echo "-----------------------------------------------------------------------------"
-echo " Merging overlay data..."
-echo "-----------------------------------------------------------------------------"
-
-query "SELECT w.*, o.pm2_low, o.pm2_medium, o.pm2_high, o.traffic_low, o.traffic_medium, o.traffic_high \
- INTO temp FROM ways w JOIN overlays o ON o.id = w.id"
-query "DROP TABLE ways"
-query "ALTER TABLE temp RENAME TO ways"
-query "DROP TABLE overlays"
-
-# -----------------------------------------------------------------------------
-
-echo "-----------------------------------------------------------------------------"
-echo " Removing unconnected components from the gloabl graph..."
+echo " Removing unconnected components from the global graph..."
 echo "-----------------------------------------------------------------------------"
 
 query "DELETE FROM ways WHERE highway IS NULL"
@@ -222,7 +178,7 @@ query "DROP TABLE IF EXISTS pointsofinterest"
 # -----------------------------------------------------------------------------
 
 echo "-----------------------------------------------------------------------------"
-echo " Creating data tables"
+echo " Creating additional tables"
 echo "-----------------------------------------------------------------------------"
 
 query "CREATE TABLE pois (id BIGINT PRIMARY KEY, \
@@ -238,6 +194,55 @@ query "CREATE TABLE profiles (name TEXT PRIMARY KEY, \
 	cost DOUBLE PRECISION, \
 	green INTEGER)"
 query "\copy profiles FROM data/profiles.csv WITH CSV DELIMITER ','"
+
+mkdir -p .cache
+
+query "\copy (SELECT id, x1, y1, x2, y2 FROM ways) TO .cache/ways.csv WITH CSV DELIMITER ','"
+
+echo "Processing air pollution overlays..."
+add_overlay $POLLUTION_OVERLAY_LOW $MIN_AQI $MAX_AQI .cache/ways.csv .cache/work1.csv
+add_overlay $POLLUTION_OVERLAY_MEDIUM $MIN_AQI $MAX_AQI .cache/work1.csv .cache/work2.csv
+add_overlay $POLLUTION_OVERLAY_HIGH $MIN_AQI $MAX_AQI .cache/work2.csv .cache/pollution.csv
+
+echo "Processing traffic overlays..."
+add_overlay $TRAFFIC_OVERLAY_LOW $MIN_TRAFFIC $MAX_TRAFFIC .cache/pollution.csv .cache/work1.csv
+add_overlay $TRAFFIC_OVERLAY_MEDIUM $MIN_TRAFFIC $MAX_TRAFFIC .cache/work1.csv .cache/work2.csv
+add_overlay $TRAFFIC_OVERLAY_HIGH $MIN_TRAFFIC $MAX_TRAFFIC .cache/work2.csv .cache/overlays.csv
+
+echo "Creating data table"
+query "CREATE TABLE data (id BIGINT PRIMARY KEY, \
+						  pm2_low INTEGER, \
+						  pm2_medium INTEGER, pm2_high INTEGER, \
+						  traffic_low INTEGER, \
+						  traffic_medium INTEGER, traffic_high INTEGER, \
+						  comf_n DOUBLE PRECISION, qualinf_n DOUBLE PRECISION, \
+						  sic_n DOUBLE PRECISION, acc_n DOUBLE PRECISION, \
+						  walk_n DOUBLE PRECISION)"
+query "\copy data(id, pm2_low, pm2_medium, pm2_high, \
+       traffic_low, traffic_medium, traffic_high) \
+	   FROM PROGRAM 'cut -d , -f1,6,7,8,9,10,11 .cache/overlays.csv' WITH CSV DELIMITER ',' NULL 'NULL'"
+	  
+query "CREATE TABLE wi (id BIGINT PRIMARY KEY, \
+						  comf_n DOUBLE PRECISION, qualinf_n DOUBLE PRECISION, \
+						  sic_n DOUBLE PRECISION, acc_n DOUBLE PRECISION, \
+						  walk_n DOUBLE PRECISION)"
+	  
+query "\copy wi(id, comf_n, qualinf_n, sic_n, acc_n, walk_n) \
+	   FROM data/wi_210225.csv WITH CSV HEADER DELIMITER ',' NULL 'NULL'"
+	   
+query "UPDATE data
+SET 
+    comf_n = COALESCE(data.comf_n, wi.comf_n),
+    qualinf_n = COALESCE(data.qualinf_n, wi.qualinf_n),
+    sic_n = COALESCE(data.sic_n, wi.sic_n),
+    acc_n = COALESCE(data.acc_n, wi.acc_n),
+    walk_n = COALESCE(data.walk_n, wi.walk_n)
+FROM wi
+WHERE data.id = wi.id;
+"
+query "DROP TABLE wi"
+
+rm -r .cache
 
 echo "-----------------------------------------------------------------------------"
 echo " All done!"

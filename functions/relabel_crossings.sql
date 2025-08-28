@@ -1,5 +1,5 @@
 -- relabel_crossings.sql
--- Changes the 'highway' label of crossings from 'footway' to 'crossing'
+-- Changes the 'highway' label of crossings
 -- Copyright (c) 2024 Jacopo Maltagliati (j.maltagliati@campus.unimib.it)
 -- This file is part of the MUSA micromobility project
 
@@ -10,16 +10,25 @@ CREATE OR REPLACE PROCEDURE public.relabel_crossings()
 LANGUAGE plpgsql
 AS $procedure$
 
-DECLARE crossing_ids BIGINT[];
+DECLARE fcids BIGINT[];
+DECLARE ccids BIGINT[];
 BEGIN
 
-crossing_ids := array(
+fcids := array(
     SELECT osm_id FROM osm_ways WHERE tags->'footway' LIKE 'crossing' 
     );
 
+ccids := array(
+    SELECT osm_id FROM osm_ways WHERE tags->'cycleway' LIKE 'crossing' 
+    );
+
 UPDATE ways 
-    SET highway = 'crossing' 
-    WHERE osm_id =ANY(crossing_ids);
+    SET highway = 'foot_crossing' 
+    WHERE osm_id =ANY(fcids);
+    
+UPDATE ways 
+    SET highway = 'cycle_crossing' 
+    WHERE osm_id =ANY(ccids);
 
 END;
 $procedure$

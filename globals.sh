@@ -7,11 +7,13 @@
 MAP_FILE=bicocca.osm
 
 # Network parameters for connecting to the DB
-PGSQL_SERVER_ADDR=mapserver-db
-# PGSQL_SERVER_PORT=
+# Use "wizrd-db" if you're running this in Docker, or
+# "localhost" if you're running locally
+PGSQL_SERVER_ADDR=localhost
+PGSQL_SERVER_PORT=5432 # [jm] This is currently unused
 
 # Connection parameters for the DB
-PGSQL_DB_NAME=mapserver
+PGSQL_DB_NAME=main
 PGSQL_USER=admin
 PGSQL_PASS=admin
 
