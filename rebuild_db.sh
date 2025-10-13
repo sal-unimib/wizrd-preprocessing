@@ -182,18 +182,19 @@ echo " Creating additional tables"
 echo "-----------------------------------------------------------------------------"
 
 query "CREATE TABLE pois (id BIGINT PRIMARY KEY, \
-	type TEXT, \
-	lon DOUBLE PRECISION, \
-	lat DOUBLE PRECISION, \
-	name TEXT, description TEXT, \
+	type TEXT NOT NULL, \
+	lon DOUBLE PRECISION NOT NULL, \
+	lat DOUBLE PRECISION NOT NULL, \
+	name TEXT NOT NULL, description TEXT, \
 	bikes INTEGER, scooters INTEGER, ebikes INTEGER)"
 query "\copy pois FROM data/pois.csv WITH CSV DELIMITER ','"
 
-query "CREATE TABLE profiles (name TEXT PRIMARY KEY, \
-	speed DOUBLE PRECISION, \
-	cost DOUBLE PRECISION, \
-	green INTEGER)"
-query "\copy profiles FROM data/profiles.csv WITH CSV DELIMITER ','"
+query "CREATE TYPE vehicle_kind AS ENUM ('none', 'bike', 'ebike', 'scooter')"
+query "CREATE TABLE vehicles (kind vehicle_kind PRIMARY KEY, \
+	speed DOUBLE PRECISION NOT NULL, \
+	cost DOUBLE PRECISION NOT NULL, \
+	green INTEGER NOT NULL)"
+query "\copy vehicles FROM data/vehicles.csv WITH CSV DELIMITER ','"
 
 mkdir -p .cache
 
