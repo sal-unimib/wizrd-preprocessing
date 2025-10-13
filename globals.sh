@@ -13,7 +13,7 @@ PGSQL_SERVER_ADDR=localhost
 PGSQL_SERVER_PORT=5432 # [jm] This is currently unused
 
 # Connection parameters for the DB
-PGSQL_DB_NAME=main
+PGSQL_DB_NAME=wizrd
 PGSQL_USER=admin
 PGSQL_PASS=admin
 
