@@ -34,19 +34,11 @@ To rebuild the container image you should do the following:
 ```console
 $ rm -rf osm2pgrouting/
 $ mkdir -p osm2pgrouting 
-$ git pull --recurse-submodules 
+$ git pull --recurse-submodules
 $ docker build -t mapserver-rebuilder .
 ```
 
-...which can be condensed into the following one-liner:
-
-`rm -rf osm2pgrouting/; mkdir -p osm2pgrouting; git pull --recurse-submodules; docker build -t mapserver-rebuilder .`
-
-The image only needs to be rebuilt if you change an overlay image or the bounding box, or when you change the variables in `globals.sh` (or any other script for that matter). Once you've rebuilt the image, you can run the container as follows:
-
-`docker run --name=mapserver-rebuilder --network=musa-network mapserver-rebuilder`
-
-This will have the same effect as running `./rebuild_db.sh`, but will not require you to forward the DB's port to the host.
+The Dockerfile is meant to be called from the backend's docker-compose.
 
 ### Manual Process
 

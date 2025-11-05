@@ -7,6 +7,8 @@
 
 source globals.sh
 
+OVERPASS=https://overpass-api.de/api/map?bbox=$BB_SW_LON,$BB_SW_LAT,$BB_NE_LON,$BB_NE_LAT
+
 hash curl 2>/dev/null 
 panic $? "\"curl\" is required to run this script"
 
@@ -15,7 +17,9 @@ panic $? "\"osmconvert\" is required to run this script"
 
 mkdir -p .cache/
 
-curl -o .cache/temp.osm https://overpass-api.de/api/map?bbox=$BB_SW_LON,$BB_SW_LAT,$BB_NE_LON,$BB_NE_LAT
+echo "Downloading from: \"$OVERPASS\""
+curl -m 30 -o .cache/temp.osm $OVERPASS
 osmconvert .cache/temp.osm --complete-ways --drop-author --drop-version --out-osm -o=$MAP_FILE
+panic $? "Failed to process the OSM dump"
 
 rm -r .cache/
